@@ -1,4 +1,3 @@
-
 @import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;0,900;1,400;1,700&family=Tiro+Bangla:ital@0;1&display=swap');
 @import "tailwindcss";
 
@@ -7,32 +6,44 @@
 
 /* ── Design Tokens ── */
 :root {
-  --clr-red:        #C8102E;
-  --clr-red-dark:   #9B0B22;
-  --clr-red-light:  #F5E6E9;
-  --clr-gold:       #B8922A;
-  --clr-bg:         #F7F5F0;
-  --clr-surface:    #FFFFFF;
-  --clr-border:     #D8D3CA;
-  --clr-text:       #1A1A1A;
-  --clr-muted:      #5C5C5C;
-  --clr-light:      #F0EDE8;
+  --clr-red: #C8102E;
+  --clr-red-dark: #9B0B22;
+  --clr-red-light: #F5E6E9;
+  --clr-gold: #B8922A;
+  --clr-bg: #F7F5F0;
+  --clr-surface: #FFFFFF;
+  --clr-border: #D8D3CA;
+  --clr-text: #1A1A1A;
+  --clr-muted: #5C5C5C;
+  --clr-light: #F0EDE8;
 }
 
 /* ── Premium Dark Theme Token Overrides ── */
 .dark {
-  --clr-bg:         #0F0F0E; /* Dark charcoal newsprint background */
-  --clr-surface:    #181816; /* Slightly lighter for cards */
-  --clr-border:     #2E2D2A; /* Subtle dark borders */
-  --clr-text:       #F2F1ED; /* Creamy white text for perfect readability */
-  --clr-muted:      #A5A29B; /* Muted texts */
-  --clr-light:      #262523; /* Dark inputs/panels */
+  --clr-bg: #0F0F0E;
+  /* Dark charcoal newsprint background */
+  --clr-surface: #181816;
+  /* Slightly lighter for cards */
+  --clr-border: #2E2D2A;
+  /* Subtle dark borders */
+  --clr-text: #F2F1ED;
+  /* Creamy white text for perfect readability */
+  --clr-muted: #A5A29B;
+  /* Muted texts */
+  --clr-light: #262523;
+  /* Dark inputs/panels */
 }
 
 /* ── Reset & Base ── */
-*, *::before, *::after { box-sizing: border-box; }
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
 
-html { color-scheme: light dark; }
+html {
+  color-scheme: light dark;
+}
 
 body {
   background-color: var(--clr-bg);
@@ -42,9 +53,17 @@ body {
 }
 
 /* ── Typography helpers ── */
-.font-serif   { font-family: "Playfair Display", "Tiro Bangla", Georgia, serif; }
-.font-bangla  { font-family: "Tiro Bangla", serif; }
-.font-display { font-family: "Playfair Display", Georgia, serif; }
+.font-serif {
+  font-family: "Playfair Display", "Tiro Bangla", Georgia, serif;
+}
+
+.font-bangla {
+  font-family: "Tiro Bangla", serif;
+}
+
+.font-display {
+  font-family: "Playfair Display", Georgia, serif;
+}
 
 /* ── Section heading underline rule ── */
 .section-heading {
@@ -60,27 +79,49 @@ body {
   padding-bottom: 0.5rem;
   border-bottom: 3px solid var(--clr-text);
 }
-.section-heading .accent { color: var(--clr-red); }
+
+.section-heading .accent {
+  color: var(--clr-red);
+}
 
 /* ── Breaking ticker ── */
 @keyframes ticker {
-  0%   { transform: translateX(100vw); }
-  100% { transform: translateX(-100%); }
+  0% {
+    transform: translateX(100vw);
+  }
+
+  100% {
+    transform: translateX(-100%);
+  }
 }
+
 .ticker-track {
   display: inline-block;
   white-space: nowrap;
   animation: ticker 40s linear infinite;
 }
-.ticker-track:hover { animation-play-state: paused; }
+
+.ticker-track:hover {
+  animation-play-state: paused;
+}
 
 /* ── Hover image zoom ── */
-.img-zoom { overflow: hidden; }
-.img-zoom img { transition: transform 0.6s ease; }
-.img-zoom:hover img { transform: scale(1.05); }
+.img-zoom {
+  overflow: hidden;
+}
+
+.img-zoom img {
+  transition: transform 0.6s ease;
+}
+
+.img-zoom:hover img {
+  transform: scale(1.05);
+}
 
 /* ── Article card dividers ── */
-.article-grid > *:not(:last-child) { border-right: 1px solid var(--clr-border); }
+.article-grid>*:not(:last-child) {
+  border-right: 1px solid var(--clr-border);
+}
 
 /* ── Double rule ── */
 .double-rule {
@@ -90,15 +131,29 @@ body {
 }
 
 /* ── Vertical text ── */
-.vertical-text { writing-mode: vertical-rl; text-orientation: mixed; }
+.vertical-text {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+}
 
 /* ── Scrollbar ── */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: var(--clr-bg); }
-::-webkit-scrollbar-thumb { background: var(--clr-red); border-radius: 3px; }
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--clr-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--clr-red);
+  border-radius: 3px;
+}
 
 /* ── Marquee stop-on-hover ── */
-.ticker-wrap:hover .ticker-track { animation-play-state: paused; }
+.ticker-wrap:hover .ticker-track {
+  animation-play-state: paused;
+}
 
 /* ── Red badge pill ── */
 .badge-red {
@@ -114,9 +169,17 @@ body {
 }
 
 /* ── Category color strips ── */
-.strip-red   { border-left: 3px solid var(--clr-red); }
-.strip-gold  { border-left: 3px solid var(--clr-gold); }
-.strip-black { border-left: 3px solid #111; }
+.strip-red {
+  border-left: 3px solid var(--clr-red);
+}
+
+.strip-gold {
+  border-left: 3px solid var(--clr-gold);
+}
+
+.strip-black {
+  border-left: 3px solid #111;
+}
 
 /* ── Number list badge ── */
 .num-badge {
@@ -131,12 +194,23 @@ body {
 
 /* ── Pulse dot ── */
 @keyframes pulse-dot {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50%       { opacity: 0.5; transform: scale(1.4); }
+
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.5;
+    transform: scale(1.4);
+  }
 }
+
 .pulse-dot {
   display: inline-block;
-  width: 7px; height: 7px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
   background: var(--clr-red);
   animation: pulse-dot 1.4s ease-in-out infinite;

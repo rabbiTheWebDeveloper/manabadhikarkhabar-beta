@@ -12,6 +12,7 @@
   body {
     @apply bg-[#f8f9fa] text-gray-900 transition-colors duration-200;
   }
+
   .dark body {
     @apply bg-[#0F0F0E] text-[#F2F1ED];
   }
@@ -24,6 +25,7 @@
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
 .hide-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
