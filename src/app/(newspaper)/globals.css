@@ -1,0 +1,37 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Tiro+Bangla:ital@0;1&display=swap');
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+
+  --font-serif: "Playfair Display", "Tiro Bangla", ui-serif, Georgia, serif;
+  --font-bangla: "Tiro Bangla", serif;
+  
+  --color-newspaper-red: #D20000;
+  --color-newspaper-bg: #F9F9F9;
+  --color-newspaper-border: #E5E5E5;
+  --color-newspaper-text: #111111;
+  --color-newspaper-muted: #555555;
+}
+
+body {
+  background-color: var(--color-newspaper-bg);
+  color: var(--color-newspaper-text);
+}
+
+/* Custom utilities for newspaper look */
+.newspaper-divide-y > * + * {
+  border-top: 1px solid var(--color-newspaper-border);
+}
+.newspaper-divide-x > * + * {
+  border-left: 1px solid var(--color-newspaper-border);
+}
+.double-border-bottom {
+  border-bottom: 3px double var(--color-newspaper-border);
+}
+.double-border-top {
+  border-top: 3px double var(--color-newspaper-border);
+}
