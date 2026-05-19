@@ -8,6 +8,7 @@ import {
 import { FaFacebook as Facebook, FaTwitter as Twitter, FaYoutube as Youtube } from 'react-icons/fa';
 import { latestNews, investigations, journalists, videos } from '@/data/mockData';
 import Link from 'next/link';
+import ThemeToggle from '@/components/commons/ThemeToggle';
 
 export default function App() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -152,9 +153,12 @@ export default function App() {
               <li className="h-full flex items-center border-b-2 border-transparent hover:text-red-700 text-blue-600 dark:text-blue-400 dark:hover:text-red-500 transition-colors"><a href="#">ভিডিও</a></li>
             </ul>
 
-            {/* Search */}
-            <div className="flex items-center text-neutral-600 dark:text-neutral-300 hover:text-red-700 dark:hover:text-red-500 cursor-pointer">
-              <Search size={18} />
+            {/* Search & Theme Toggle */}
+            <div className="flex items-center gap-4">
+              <div className="flex items-center text-neutral-600 dark:text-neutral-300 hover:text-red-700 dark:hover:text-red-500 cursor-pointer">
+                <Search size={18} />
+              </div>
+              <ThemeToggle />
             </div>
           </div>
         </div>

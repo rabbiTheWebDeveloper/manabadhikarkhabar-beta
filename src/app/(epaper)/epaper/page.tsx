@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { FaFacebook as Facebook, FaTwitter as Twitter, FaYoutube as Youtube } from 'react-icons/fa';
 import Link from 'next/link';
+import ThemeToggle from "@/components/commons/ThemeToggle";
 
 // Mock data for high quality E-paper pages (Beautiful traditional news layouts)
 const PAGES = [
@@ -143,6 +144,7 @@ export default function EpaperApp() {
               <button className="p-2 hover:bg-neutral-100 rounded-full border border-neutral-200">
                 <User size={18} className="text-neutral-700" />
               </button>
+              <ThemeToggle />
             </div>
 
           </div>

@@ -2,10 +2,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;0,900;1,400;1,700&family=Tiro+Bangla:ital@0;1&display=swap');
 @import "tailwindcss";
 
-/* ── Force light-mode only: disable all Tailwind dark-media variants ── */
-@media (prefers-color-scheme: dark) {
-  :root { color-scheme: light; }
-}
+/* ── Class-based Dark Mode variant for Tailwind CSS v4 ── */
+@variant dark (&:where(.dark, .dark *));
 
 /* ── Design Tokens ── */
 :root {
@@ -21,10 +19,20 @@
   --clr-light:      #F0EDE8;
 }
 
+/* ── Premium Dark Theme Token Overrides ── */
+.dark {
+  --clr-bg:         #0F0F0E; /* Dark charcoal newsprint background */
+  --clr-surface:    #181816; /* Slightly lighter for cards */
+  --clr-border:     #2E2D2A; /* Subtle dark borders */
+  --clr-text:       #F2F1ED; /* Creamy white text for perfect readability */
+  --clr-muted:      #A5A29B; /* Muted texts */
+  --clr-light:      #262523; /* Dark inputs/panels */
+}
+
 /* ── Reset & Base ── */
 *, *::before, *::after { box-sizing: border-box; }
 
-html { color-scheme: light !important; }
+html { color-scheme: light dark; }
 
 body {
   background-color: var(--clr-bg);
