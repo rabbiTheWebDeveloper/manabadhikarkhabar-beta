@@ -14,7 +14,7 @@ export default function App() {
 
   useEffect(() => {
     // Ensure dark mode class is disabled
-    document.documentElement.classList.remove('dark');
+    document.documentElement.classList.remove('light');
   }, []);
 
   // Current Date in Bengali
