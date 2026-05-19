@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { FaFacebook as Facebook, FaTwitter as Twitter, FaYoutube as Youtube } from 'react-icons/fa';
 import { latestNews, investigations, journalists, videos } from '@/data/mockData';
+import Link from 'next/link';
 
 export default function App() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -22,7 +23,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#fdfdfb] text-neutral-900 dark:bg-gray-950 dark:text-gray-100 font-serif transition-colors duration-200">
-      
+
       {/* 1. Top Bar */}
       <div className="bg-neutral-900 text-white text-[10px] sm:text-xs font-sans tracking-wider uppercase border-b border-neutral-700">
         <div className="max-w-7xl mx-auto px-4 py-1.5 flex justify-between items-center">
@@ -50,21 +51,21 @@ export default function App() {
         {/* Brand */}
         <div className="flex-1 flex flex-col items-center justify-center relative py-2">
           <a href="/" className="inline-block relative">
-            
+
             {/* SVG Dove & Document Logo */}
             <div className="absolute -top-8 -left-8 md:-top-10 md:-left-12 lg:-top-14 lg:-left-20 z-0 w-32 h-24 md:w-36 md:h-28 lg:w-48 lg:h-36 pointer-events-none opacity-90 overflow-visible">
               <svg viewBox="0 0 160 120" xmlns="http://www.w3.org/2000/svg" className="w-full h-full drop-shadow-sm">
-                
+
                 {/* Secondary Wing (Right) */}
                 <path d="M85,50 C 75,25 90,15 105,25" stroke="#D20000" strokeWidth="2.5" fill="none" strokeLinecap="round" className="dark:stroke-red-500" />
-                
+
                 {/* Main Red Dove Path */}
-                <path d="M90,55 C70,30 40,25 20,30 C28,38 35,45 32,55 C22,54 15,50 10,50 C20,60 35,68 45,70 C30,80 15,90 5,100 C35,95 60,80 75,65 C90,80 110,75 120,55 L135,50 L125,42 C115,32 100,35 90,55 Z" 
-                      stroke="#D20000" strokeWidth="2.5" fill="none" strokeLinejoin="round" strokeLinecap="round" className="dark:stroke-red-500" />
-                
+                <path d="M90,55 C70,30 40,25 20,30 C28,38 35,45 32,55 C22,54 15,50 10,50 C20,60 35,68 45,70 C30,80 15,90 5,100 C35,95 60,80 75,65 C90,80 110,75 120,55 L135,50 L125,42 C115,32 100,35 90,55 Z"
+                  stroke="#D20000" strokeWidth="2.5" fill="none" strokeLinejoin="round" strokeLinecap="round" className="dark:stroke-red-500" />
+
                 {/* Dove Eye */}
                 <circle cx="112" cy="46" r="1.5" fill="#D20000" className="dark:fill-red-500" />
-                
+
                 {/* Green Document */}
                 <g transform="translate(122, 45) rotate(15)">
                   <rect x="0" y="0" width="24" height="32" stroke="#10B981" strokeWidth="2.5" fill="white" className="dark:fill-[#111] dark:stroke-emerald-500" />
@@ -94,9 +95,9 @@ export default function App() {
             <button className="flex items-center gap-1.5 px-3 py-1 bg-red-600 text-white text-[11px] font-sans font-bold uppercase rounded-sm hover:bg-red-700 transition-colors">
               লাইভ টিভি
             </button>
-            <button className="flex items-center gap-1.5 px-3 py-1 border border-neutral-300 dark:border-neutral-600 text-[11px] font-sans font-bold uppercase rounded-sm hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors">
+            <Link href="/epaper" className="flex items-center gap-1.5 px-3 py-1 border border-neutral-300 dark:border-neutral-600 text-[11px] font-sans font-bold uppercase rounded-sm hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors">
               ই-পেপার
-            </button>
+            </Link>
           </div>
         </div>
       </header>
@@ -105,9 +106,9 @@ export default function App() {
       <nav className="sticky top-0 z-50 bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 shadow-sm flex justify-center">
         <div className="max-w-7xl w-full px-4">
           <div className="flex justify-between items-center h-12">
-            
+
             {/* Mobile menu button */}
-            <button 
+            <button
               className="md:hidden text-neutral-800 dark:text-white"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             >
@@ -120,7 +121,7 @@ export default function App() {
                 <a href="#">প্রচ্ছদ</a>
               </li>
               <li className="h-full flex items-center border-b-2 border-transparent hover:text-red-700 dark:hover:text-red-500 transition-colors group relative cursor-pointer">
-                <span className="flex items-center gap-1">জাতীয় <ChevronDown size={14} className="group-hover:rotate-180 transition-transform"/></span>
+                <span className="flex items-center gap-1">জাতীয় <ChevronDown size={14} className="group-hover:rotate-180 transition-transform" /></span>
                 {/* Mega Menu Dropdown */}
                 <div className="absolute top-12 left-0 w-[600px] bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all grid grid-cols-3 p-6 gap-6 z-50 text-left normal-case tracking-normal">
                   <div>
@@ -195,7 +196,7 @@ export default function App() {
 
       {/* Main Content Area */}
       <main className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-0 border-x border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-[#111]">
-        
+
         {/* Social Media Sticky Sidebar - Desktop Only */}
         <aside className="hidden md:flex flex-col gap-4 md:col-span-1 lg:col-span-1 sticky top-32 h-fit items-center border-r border-neutral-200 dark:border-neutral-800 py-6 bg-neutral-50 dark:bg-neutral-900/50">
           <a href="#" className="p-2 text-neutral-500 hover:text-blue-600 bg-white hover:bg-blue-50 dark:bg-neutral-800 dark:hover:bg-neutral-700 rounded-full transition-all border border-neutral-200 dark:border-neutral-700 shadow-sm"><Facebook size={18} /></a>
@@ -207,14 +208,14 @@ export default function App() {
 
         {/* Center: Lead News & Categories */}
         <div className="col-span-1 md:col-span-8 p-6 border-r border-neutral-200 dark:border-neutral-800 overflow-hidden flex flex-col gap-8">
-          
+
           {/* Lead News */}
           <section className="relative group cursor-pointer group">
             <div className="relative overflow-hidden mb-5">
               <div className="w-full h-[360px] bg-neutral-200 overflow-hidden relative">
-                <img 
-                  src="https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?auto=format&fit=crop&q=80&w=1200" 
-                  alt="Lead news" 
+                <img
+                  src="https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?auto=format&fit=crop&q=80&w=1200"
+                  alt="Lead news"
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent pointer-events-none"></div>
@@ -228,7 +229,7 @@ export default function App() {
                 </div>
               </div>
             </div>
-            
+
             <p className="font-serif text-neutral-700 dark:text-neutral-300 text-lg md:text-xl line-clamp-3 leading-relaxed">
               দেশের ক্রমবর্ধমান মূল্যস্ফীতি এবং অর্থনৈতিক অস্থিতিশীলতা মোকাবিলায় সরকার নতুন অর্থনীতিক নীতি ঘোষণা করেছে। বিশেষজ্ঞদের মতে, এই নীতি দীর্ঘমেয়াদে সহায়ক হলেও স্বল্পমেয়াদে সাধারণ মানুষের ওপর চাপ বাড়াতে পারে।
             </p>
@@ -268,7 +269,7 @@ export default function App() {
               <h2 className="text-xs font-sans font-black uppercase tracking-tight">মানবাধিকার <span className="text-red-700 dark:text-red-500">অনুসন্ধান</span></h2>
               <a href="#" className="font-sans text-[10px] font-bold text-red-700 dark:text-red-500 uppercase hover:underline flex items-center gap-1">সবগুলো দেখুন <ArrowRight size={12} /></a>
             </div>
-            
+
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {investigations.map((inv) => (
                 <article key={inv.id} className="group cursor-pointer">
@@ -286,8 +287,8 @@ export default function App() {
 
           {/* Inline Content Ad */}
           <div className="w-full h-[100px] bg-neutral-100 dark:bg-neutral-800 flex flex-col items-center justify-center border border-neutral-300 dark:border-neutral-700 my-2 text-neutral-400">
-             <span className="text-[10px] font-sans uppercase mb-1">Advertisement</span>
-             <p className="text-xs italic font-serif">বিজ্ঞাপনের জন্য যোগাযোগ করুন</p>
+            <span className="text-[10px] font-sans uppercase mb-1">Advertisement</span>
+            <p className="text-xs italic font-serif">বিজ্ঞাপনের জন্য যোগাযোগ করুন</p>
           </div>
 
           {/* Video News Section */}
@@ -312,17 +313,17 @@ export default function App() {
                 </div>
                 <h3 className="font-serif font-bold text-xl mt-4 group-hover:text-red-400 transition-colors leading-snug">{videos[0].title}</h3>
               </div>
-              
+
               {/* List of Videos */}
               <div className="md:col-span-4 flex flex-col gap-5">
                 {videos.slice(1).map((vid) => (
                   <div key={vid.id} className="group cursor-pointer flex gap-3">
                     <div className="relative w-32 aspect-video flex-shrink-0 border border-neutral-800 rounded-sm overflow-hidden">
-                       <img src={vid.thumbnail} className="w-full h-full object-cover opacity-80 group-hover:opacity-100" alt="video thumbnail" />
-                       <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-transparent transition-colors">
-                         <PlayCircle size={16} className="text-white drop-shadow-md" />
-                       </div>
-                       <span className="absolute bottom-1 right-1 bg-black/80 px-1 text-[9px] font-sans font-bold">{vid.duration}</span>
+                      <img src={vid.thumbnail} className="w-full h-full object-cover opacity-80 group-hover:opacity-100" alt="video thumbnail" />
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-transparent transition-colors">
+                        <PlayCircle size={16} className="text-white drop-shadow-md" />
+                      </div>
+                      <span className="absolute bottom-1 right-1 bg-black/80 px-1 text-[9px] font-sans font-bold">{vid.duration}</span>
                     </div>
                     <h4 className="font-serif font-bold text-[13px] leading-tight line-clamp-3 group-hover:text-red-400 transition-colors">{vid.title}</h4>
                   </div>
@@ -335,7 +336,7 @@ export default function App() {
 
         {/* Right Sidebar */}
         <aside className="col-span-1 md:col-span-3 p-4 bg-neutral-50 dark:bg-neutral-900/40 flex flex-col gap-6">
-          
+
           {/* Latest News Tabs */}
           <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-sm overflow-hidden">
             <div className="flex border-b border-neutral-200 dark:border-neutral-800 font-sans font-bold text-xs uppercase">
@@ -347,7 +348,7 @@ export default function App() {
                 <li key={news.id} className="group relative">
                   <a href="#" className="block p-3 border-b border-neutral-100 dark:border-neutral-800 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors">
                     <div className="flex gap-3 items-start">
-                      <span className="font-sans text-lg font-black text-red-700 dark:text-red-500 group-hover:scale-110 transition-transform">{i+1}</span>
+                      <span className="font-sans text-lg font-black text-red-700 dark:text-red-500 group-hover:scale-110 transition-transform">{i + 1}</span>
                       <div>
                         <h4 className="font-serif font-bold text-[13px] leading-tight group-hover:underline">{news.title}</h4>
                       </div>
@@ -398,20 +399,20 @@ export default function App() {
       {/* Footer */}
       <footer className="bg-white dark:bg-[#111] border-t border-neutral-200 dark:border-neutral-800 py-6 mt-12">
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
-          
+
           <div className="flex flex-wrap items-center justify-center gap-4 text-[11px] font-sans font-bold text-neutral-500 uppercase tracking-widest">
             <a href="#" className="hover:text-red-700 transition-colors">আমাদের সম্পর্কে</a>
             <a href="#" className="hover:text-red-700 transition-colors">যোগাযোগ</a>
             <a href="#" className="hover:text-red-700 transition-colors">গোপনীয়তা নীতি</a>
             <a href="#" className="hover:text-red-700 transition-colors">আর্কাইভ</a>
           </div>
-          
+
           <div className="flex items-center gap-3">
-             <a href="#" className="w-7 h-7 bg-blue-900 rounded-full flex items-center justify-center text-white hover:scale-110 transition-transform"><Facebook size={14} /></a>
-             <a href="#" className="w-7 h-7 bg-sky-500 rounded-full flex items-center justify-center text-white hover:scale-110 transition-transform"><Twitter size={14} /></a>
-             <a href="#" className="w-7 h-7 bg-red-600 rounded-full flex items-center justify-center text-white hover:scale-110 transition-transform"><Youtube size={14} /></a>
+            <a href="#" className="w-7 h-7 bg-blue-900 rounded-full flex items-center justify-center text-white hover:scale-110 transition-transform"><Facebook size={14} /></a>
+            <a href="#" className="w-7 h-7 bg-sky-500 rounded-full flex items-center justify-center text-white hover:scale-110 transition-transform"><Twitter size={14} /></a>
+            <a href="#" className="w-7 h-7 bg-red-600 rounded-full flex items-center justify-center text-white hover:scale-110 transition-transform"><Youtube size={14} /></a>
           </div>
-          
+
           <div className="text-[10px] font-sans font-medium text-neutral-400 uppercase tracking-wider">
             &copy; {new Date().getFullYear()} মানবাধিকার খবর | সর্বস্বত্ব সংরক্ষিত
           </div>
