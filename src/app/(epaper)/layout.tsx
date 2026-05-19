@@ -15,6 +15,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "মানবাধিকার খবর | ই-পেপার সংস্করণ",
   description: "মানবাধিকার খবর - দেশের শীর্ষস্থানীয় জাতীয় মানবাধিকার ও তদন্তমূলক সংবাদ প্ল্যাটফর্মের ডিজিটাল ই-পেপার সংস্করণ।",
+  icons: {
+    icon: "/icon.svg",
+  },
 };
 
 export default function RootLayout({

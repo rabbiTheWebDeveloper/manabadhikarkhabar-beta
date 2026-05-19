@@ -15,6 +15,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "মানবাধিকার খবর | সত্যের সন্ধানে নির্ভীক",
   description: "মানবাধিকার খবর - দেশের শীর্ষস্থানীয় জাতীয় মানবাধিকার ও তদন্তমূলক সংবাদ প্ল্যাটফর্ম।",
+  icons: {
+    icon: "/icon.svg",
+  },
 };
 
 export default function RootLayout({
