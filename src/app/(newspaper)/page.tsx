@@ -2,23 +2,19 @@
 import { useState, useEffect } from 'react';
 import {
   Menu, Search, Map as MapIcon, Tv, FileText, ChevronDown,
-  MapPin, Clock, Moon, Sun,
+  MapPin, Clock,
   PlayCircle, MenuSquare, ArrowRight, User
 } from 'lucide-react';
 import { FaFacebook as Facebook, FaTwitter as Twitter, FaYoutube as Youtube } from 'react-icons/fa';
 import { latestNews, investigations, journalists, videos } from '@/data/mockData';
 
 export default function App() {
-  const [darkMode, setDarkMode] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    if (darkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, [darkMode]);
+    // Ensure dark mode class is disabled
+    document.documentElement.classList.remove('dark');
+  }, []);
 
   // Current Date in Bengali
   const dateOptions: Intl.DateTimeFormatOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
@@ -40,14 +36,6 @@ export default function App() {
               <a href="#" className="hover:text-sky-400 transition-colors"><Twitter size={14} /></a>
               <a href="#" className="hover:text-red-500 transition-colors"><Youtube size={14} /></a>
             </div>
-            <div className="h-4 w-px bg-neutral-700"></div>
-            <button 
-              onClick={() => setDarkMode(!darkMode)}
-              className="hover:text-red-400 transition-colors"
-              aria-label="Toggle Dark Mode"
-            >
-              {darkMode ? <Sun size={14} /> : <Moon size={14} />}
-            </button>
           </div>
         </div>
       </div>
