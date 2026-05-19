@@ -22,8 +22,8 @@ import Link from 'next/link';
 
 // Mock data for high quality E-paper pages (Beautiful traditional news layouts)
 const PAGES = [
-  { id: 1, title: "প্রথম পাতা (প্রচ্ছদ)", image: "https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&q=80&w=1200" },
-  { id: 2, title: "জাতীয় সংবাদ (২য় পাতা)", image: "https://images.unsplash.com/photo-1585829365294-bb8c8f773138?auto=format&fit=crop&q=80&w=1200" },
+  { id: 1, title: "প্রথম পাতা (প্রচ্ছদ)", image: "https://manabadhikarkhabar.com/epaper/admin/background/22-4-2026-17768674352.jpg" },
+  { id: 2, title: "জাতীয় সংবাদ (২য় পাতা)", image: "https://manabadhikarkhabar.com/epaper/admin/background/22-4-2026-17768701711.jpg" },
   { id: 3, title: "আন্তর্জাতিক (৩য় পাতা)", image: "https://images.unsplash.com/photo-1529243856184-fd5465488984?auto=format&fit=crop&q=80&w=1200" },
   { id: 4, title: "সম্পাদকীয় ও মতামত (৪র্থ পাতা)", image: "https://images.unsplash.com/photo-1457369804613-52c61a468e7d?auto=format&fit=crop&q=80&w=1200" },
   { id: 5, title: "সারাদেশ ও বিশেষ প্রতিবেদন (৫ম পাতা)", image: "https://images.unsplash.com/photo-1611974714151-547a46985c72?auto=format&fit=crop&q=80&w=1200" },
