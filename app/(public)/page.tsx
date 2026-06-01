@@ -847,67 +847,7 @@ export default function Page() {
  
             {/* Right Sidebar (3 Cols) */}
             <aside className="lg:col-span-3">
-              
-              {/* Prothom Alo Live Latest News Scraper (30 Min Automatics) */}
-              <div className="border border-red-700 bg-red-50/25 px-4 py-4 rounded mb-6 font-bangla shadow-sm relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-24 h-24 bg-red-500/5 rounded-full translate-x-8 -translate-y-8 pointer-events-none" />
-                
-                <div className="flex items-center gap-2 border-b border-red-100 pb-2 mb-3">
-                  <div className="relative">
-                    {scraperStatus.isRunning && (
-                      <span className="absolute top-0.5 right-0.5 flex h-2 w-2">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
-                      </span>
-                    )}
-                    <Compass className={`w-5 h-5 text-red-750 ${scraperStatus.isRunning ? 'animate-spin' : ''}`} />
-                  </div>
-                  <h3 className="text-[14px] font-[900] text-gray-900 font-sans tracking-wide">
-                    প্রথম আলো রিয়েল-টাইম ক্রলার
-                  </h3>
-                </div>
 
-                <p className="text-[12.5px] text-gray-700 leading-relaxed mb-3">
-                  এই পোর্টালটি প্রতি ৩০ মিনিটে স্বয়ংক্রিয়ভাবে প্রথম আলোর সর্বশেষ সংবাদ সংগ্রহ ও ডেটাবেজে সংরক্ষণ করে।
-                </p>
-
-                {/* Real-time Status Area */}
-                <div className="bg-white/80 border border-gray-200 rounded p-2.5 mb-3 text-[12px] space-y-1 shadow-inner">
-                  <div className="flex justify-between">
-                    <span className="text-gray-500">ক্রলার স্ট্যাটাস:</span>
-                    <span className={`font-bold flex items-center gap-1 ${scraperStatus.isRunning ? 'text-red-600 animate-pulse' : 'text-emerald-600'}`}>
-                      <span className={`h-1.5 w-1.5 rounded-full ${scraperStatus.isRunning ? 'bg-red-500 animate-ping' : 'bg-emerald-500'}`} />
-                      {scraperStatus.isRunning ? 'ক্রলিং চলছে...' : 'সংযুক্ত/সক্রিয় রয়েছে'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-500">শেষ রানিং সময়:</span>
-                    <span className="font-medium text-gray-800">
-                      {scraperStatus.lastRun > 0 
-                        ? formatScraperLastRunBengali(scraperStatus.lastRun) 
-                        : 'কখনোই নয়'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-500">সংগৃহীত খবর:</span>
-                    <span className="font-bold text-red-750">
-                      {toBengaliDigits(scraperStatus.count)} টি (শেষ ক্রল রান)
-                    </span>
-                  </div>
-                  <div className="border-t border-dashed border-gray-200 mt-1.5 pt-1.5 text-[11px] font-medium text-gray-500 italic">
-                    {scraperStatus.message}
-                  </div>
-                </div>
-
-                <button
-                  onClick={handleScrapeLatest}
-                  disabled={scraperLoading || scraperStatus.isRunning}
-                  className="w-full bg-red-750 hover:bg-red-800 disabled:bg-gray-300 disabled:cursor-not-allowed text-white text-xs font-bold py-2.5 px-3 rounded flex items-center justify-center gap-1.5 transition-all duration-200 cursor-pointer shadow-sm hover:shadow active:scale-95 text-sans"
-                >
-                  <RefreshCw className={`w-3.5 h-3.5 ${scraperLoading || scraperStatus.isRunning ? 'animate-spin' : ''}`} />
-                  <span>{scraperLoading || scraperStatus.isRunning ? 'ডাটা ক্রলিং হচ্ছে...' : 'ক্রলার রিফ্রেশ করুন'}</span>
-                </button>
-              </div>
 
               {/* Latest & Popular Tabs Block */}
               <div className="border border-gray-300">
