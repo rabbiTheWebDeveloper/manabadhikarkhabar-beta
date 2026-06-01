@@ -3,9 +3,10 @@
 import { useState, useEffect, useMemo } from 'react';
 import {
   Plus, Edit2, Trash2, Send, FileText, Search, Filter,
-  ChevronLeft, ChevronRight, Image as ImageIcon, X, RotateCcw
+  ChevronLeft, ChevronRight, Image as ImageIcon, X, RotateCcw, Eye
 } from 'lucide-react';
 import { showAdminNotif } from '@/components/admin/AdminNotification';
+import { generateSlug } from '@/lib/utils';
 
 interface Article {
   _id: string;
@@ -41,6 +42,35 @@ export default function NewsManagementPage() {
   const [isLead, setIsLead] = useState(false);
   const [isSub, setIsSub] = useState(false);
   const [publishDate, setPublishDate] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadNote, setUploadNote] = useState('');
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      setIsUploading(true);
+      setUploadNote('আপলোড হচ্ছে...');
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('folder', 'news');
+      const r = await fetch('/api/cloudinary/upload', { method: 'POST', body: fd });
+      if (r.ok) {
+        const d = await r.json();
+        setImgUrl(d.url);
+        setUploadNote('আপলোড সফল!');
+        showAdminNotif('সংবাদ ছবি আপলোড হয়েছে', 'success');
+      } else {
+        showAdminNotif('আপলোড ব্যর্থ', 'error');
+        setUploadNote('আপলোড ব্যর্থ হয়েছে');
+      }
+    } catch {
+      showAdminNotif('সংযোগ ত্রুটি', 'error');
+      setUploadNote('সংযোগ ত্রুটি ঘটেছে');
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   // Search/Filter/Pagination
   const [searchQuery, setSearchQuery] = useState('');
@@ -95,6 +125,8 @@ export default function NewsManagementPage() {
     setIsSub(false);
     setPublishDate('');
     setShowForm(false);
+    setIsUploading(false);
+    setUploadNote('');
   };
 
   const startEdit = (art: Article) => {
@@ -259,13 +291,41 @@ export default function NewsManagementPage() {
                   className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-400" />
               </div>
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1">ছবি URL</label>
-                <div className="relative">
-                  <ImageIcon className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                  <input type="url" placeholder="https://..." value={imgUrl} onChange={e => setImgUrl(e.target.value)}
-                    className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-400 text-sm font-mono" />
+                <label className="block text-sm font-bold text-gray-700 mb-1">সংবাদ ছবি *</label>
+                <div className="flex gap-2">
+                  <div className="relative flex-1">
+                    <ImageIcon className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <input type="url" placeholder="ছবির লিঙ্ক লিখুন বা আপলোড করুন..." value={imgUrl} onChange={e => setImgUrl(e.target.value)}
+                      className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-400 text-sm font-mono" required />
+                  </div>
+                  <label className={`relative flex items-center justify-center gap-1.5 px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg border border-gray-200 text-xs font-bold transition-all shadow-xs cursor-pointer active:scale-95 shrink-0 ${isUploading ? 'opacity-50 pointer-events-none' : ''}`}>
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      onChange={handleFileChange} 
+                      className="hidden" 
+                    />
+                    <span>{isUploading ? 'আপলোড হচ্ছে...' : 'আপলোড ফাইল'}</span>
+                  </label>
                 </div>
+                {uploadNote && (
+                  <p className={`text-[11px] font-bold mt-1.5 ${
+                    uploadNote.includes('সফল') ? 'text-emerald-600' : uploadNote.includes('ব্যর্থ') || uploadNote.includes('ত্রুটি') ? 'text-rose-600' : 'text-amber-600'
+                  }`}>
+                    {uploadNote}
+                  </p>
+                )}
               </div>
+              {imgUrl && (
+                <div className="md:col-span-2 p-3 bg-gray-50 border border-gray-200 rounded-lg">
+                  <p className="text-[10px] text-gray-400 font-bold mb-2">সংবাদ ছবি প্রিভিউ:</p>
+                  <div className="w-full max-w-md bg-gray-100 rounded-lg overflow-hidden border shadow-inner">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={imgUrl} alt="Preview" className="w-full h-auto block object-contain max-h-[260px]" referrerPolicy="no-referrer"
+                      onError={(e) => { (e.target as any).src = 'https://placehold.co/600x400?text=Invalid+URL'; }} />
+                  </div>
+                </div>
+              )}
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-1">প্রকাশের সময়</label>
                 <input type="datetime-local" value={publishDate} onChange={e => setPublishDate(e.target.value)}
@@ -378,7 +438,10 @@ export default function NewsManagementPage() {
                             </div>
                           )}
                           <div className="min-w-0">
-                            <p className="font-bold text-gray-900 truncate max-w-[300px]" title={art.title}>{art.title}</p>
+                            <a href={`/${generateSlug(art.title)}`} target="_blank" rel="noopener noreferrer" 
+                              className="font-bold text-gray-900 hover:text-red-650 truncate max-w-[300px] block transition-colors" title={art.title}>
+                              {art.title}
+                            </a>
                             <p className="text-[11px] text-gray-400">{art.time}</p>
                           </div>
                         </div>
@@ -394,6 +457,10 @@ export default function NewsManagementPage() {
                       <td className="py-3 px-4 text-gray-500 text-xs font-medium">{art.author}</td>
                       <td className="py-3 px-4 text-right">
                         <div className="flex gap-2 justify-end">
+                          <a href={`/${generateSlug(art.title)}`} target="_blank" rel="noopener noreferrer"
+                            className="p-1.5 px-2.5 bg-sky-50 hover:bg-sky-600 hover:text-white text-sky-600 rounded-lg border border-sky-100 transition-all flex items-center gap-1 cursor-pointer text-xs font-bold">
+                            <Eye className="w-3.5 h-3.5" /><span className="hidden sm:inline">দেখুন</span>
+                          </a>
                           <button onClick={() => startEdit(art)}
                             className="p-1.5 px-2.5 bg-gray-50 hover:bg-gray-100 text-gray-600 hover:text-gray-900 rounded-lg border border-gray-200 transition-all flex items-center gap-1 cursor-pointer text-xs font-bold">
                             <Edit2 className="w-3.5 h-3.5" /><span className="hidden sm:inline">সম্পাদনা</span>

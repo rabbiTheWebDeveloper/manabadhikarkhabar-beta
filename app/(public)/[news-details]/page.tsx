@@ -12,7 +12,7 @@ export async function generateMetadata(
   { params }: { params: Promise<{ 'news-details': string }> }
 ): Promise<Metadata> {
   const resolvedParams = await params;
-  const newsDetails = resolvedParams['news-details'];
+  const newsDetails = decodeURIComponent(resolvedParams['news-details']);
   let article: Article | null = null;
 
   try {
@@ -99,7 +99,7 @@ export default async function NewsDetailsPage(
   { params }: { params: Promise<{ 'news-details': string }> }
 ) {
   const resolvedParams = await params;
-  const newsDetails = resolvedParams['news-details'];
+  const newsDetails = decodeURIComponent(resolvedParams['news-details']);
   let article: Article | null = null;
   let sourceLabel = '';
 

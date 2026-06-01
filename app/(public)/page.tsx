@@ -222,23 +222,13 @@ export default function Page() {
 
   // Dual action state setter to track clicked articles without cascading useEffect renders
   const setSelectedArticle = (art: Article | null) => {
-    setSelectedArticleAction(art);
-    setReadingProgress(0);
-    setActiveReadingTime(0);
-    setSessionWpm(null);
-    setHasSavedSession(false);
     if (art) {
-      setRecentHistory(prev => {
-        const filtered = prev.filter(item => item._id !== art._id);
-        const updated = [art, ...filtered].slice(0, 5);
-        try {
-          sessionStorage.setItem('recent_articles_history', JSON.stringify(updated));
-        } catch (e) {
-          // ignore
-        }
-        return updated;
-      });
+      if (typeof window !== 'undefined') {
+        window.location.href = `/${generateSlug(art.title)}`;
+      }
+      return;
     }
+    setSelectedArticleAction(null);
   };
 
   const handlePrint = (e: React.MouseEvent, art: Article) => {

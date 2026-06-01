@@ -13,6 +13,7 @@ import { trackPageView } from '@/lib/analytics';
 import { WeatherWidget } from '@/components/weather-widget';
 import { RelatedArticles } from '@/components/related-articles';
 import { generateSlug } from '@/lib/utils';
+import AdBanner from '@/components/AdBanner';
 
 const BENGALI_DIGITS = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
 
@@ -117,6 +118,11 @@ export function ArticleDetailClient({ article, sourceLabel, authorData }: Articl
           </div>
         </div>
       </div>
+      
+      {/* Top banner advertisement spot */}
+      <div className="max-w-7xl mx-auto px-4 pt-4 no-print">
+        <AdBanner position="top_banner" className="w-full" />
+      </div>
 
       {/* Main Brand Header */}
       <header className="border-b-[3px] border-red-700 py-6 bg-white shadow-xs no-print">
@@ -144,8 +150,12 @@ export function ArticleDetailClient({ article, sourceLabel, authorData }: Articl
       </header>
 
       {/* Article Detail Body layout */}
-      <main className="max-w-4xl mx-auto px-4 py-8 w-full flex-1">
-        <article className="bg-white rounded-2xl border border-gray-250/70 p-6 md:p-10 shadow-sm space-y-6">
+      <main className="max-w-7xl mx-auto px-4 py-8 w-full flex-1">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          
+          {/* Left Column (9 Cols) */}
+          <div className="lg:col-span-9">
+            <article className="bg-white rounded-2xl border border-gray-250/70 p-6 md:p-10 shadow-sm space-y-6">
           
           {/* Category Pill and Print */}
           <div className="flex justify-between items-center pb-4 border-b border-gray-150 no-print">
@@ -214,6 +224,11 @@ export function ArticleDetailClient({ article, sourceLabel, authorData }: Articl
           >
             {article.content}
           </p>
+
+          {/* In-article advertisement spot */}
+          <div className="my-6 border-y border-gray-100 py-4 no-print">
+            <AdBanner position="in_article" className="w-full" />
+          </div>
 
           {/* About the Author Section */}
           {authorData && (
@@ -289,7 +304,35 @@ export function ArticleDetailClient({ article, sourceLabel, authorData }: Articl
           </div>
 
         </article>
-      </main>
+      </div>
+
+      {/* Right Sidebar Column (3 Cols) */}
+      <aside className="lg:col-span-3 space-y-6 no-print animate-fade-in">
+        <AdBanner position="sidebar" className="w-full" />
+        <AdBanner position="in_article" className="w-full" />
+        
+        {/* Quick Links Card */}
+        <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-xs">
+          <h3 className="text-[17px] font-extrabold text-gray-900 border-b border-gray-150 pb-3 mb-4 font-bangla" style={{ fontFamily: 'var(--font-serif-bangla)' }}>
+            জরুরী লিঙ্ক সমূহ
+          </h3>
+          <ul className="space-y-3 font-bangla text-[13.5px]">
+            <li>
+              <Link href="/" className="hover:text-red-700 transition-colors font-bold flex items-center gap-2 text-gray-705">
+                <span className="text-red-600 font-bold">•</span> <span>হোমপেজ সংস্করণ</span>
+              </Link>
+            </li>
+            <li>
+              <Link href="/epaper" className="hover:text-red-700 transition-colors font-bold flex items-center gap-2 text-gray-705">
+                <span className="text-red-600 font-bold">•</span> <span>ই-পেপার প্রকাশনা</span>
+              </Link>
+            </li>
+          </ul>
+        </div>
+      </aside>
+
+    </div>
+  </main>
 
       {/* Standard Footer */}
       <footer className="bg-gray-900 text-gray-400 py-12 mt-auto border-t-[4px] border-red-700 font-bangla no-print">
