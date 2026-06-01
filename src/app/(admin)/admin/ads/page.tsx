@@ -7,6 +7,13 @@ import {
 } from 'lucide-react';
 import { showAdminNotif } from '@/components/admin/AdminNotification';
 
+import { 
+  getAdsAction, 
+  createAdAction, 
+  updateAdAction, 
+  deleteAdAction 
+} from '@/app/actions/ad';
+
 export default function AdsManagementPage() {
   const [ads, setAds] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -18,7 +25,7 @@ export default function AdsManagementPage() {
   const [adImgUrl, setAdImgUrl] = useState('');
   const [adLinkUrl, setAdLinkUrl] = useState('');
   const [adPosition, setAdPosition] = useState<'sidebar' | 'top_banner'>('sidebar');
-  const [adIsActive, setAdIsActive] = useState(true);
+  const [adIsActive, setAdIsActive] = useState(false); // Default to off (inactive)
   const [isUploading, setIsUploading] = useState(false);
   const [uploadNote, setUploadNote] = useState('');
 
@@ -52,13 +59,13 @@ export default function AdsManagementPage() {
   const loadAds = async (showLoader = false) => {
     try {
       if (showLoader) setLoading(true);
-      const res = await fetch('/api/ads');
-      if (res.ok) {
-        const data = await res.json();
-        setAds(data.ads || []);
-      }
-    } catch { showAdminNotif('বিজ্ঞাপন লোড ব্যর্থ', 'error'); }
-    finally { setLoading(false); }
+      const data = await getAdsAction();
+      setAds(data.ads || []);
+    } catch (err: any) { 
+      showAdminNotif(err.message || 'বিজ্ঞাপন লোড ব্যর্থ', 'error'); 
+    } finally { 
+      setLoading(false); 
+    }
   };
 
   useEffect(() => { loadAds(true); }, []);
@@ -69,7 +76,7 @@ export default function AdsManagementPage() {
     setAdImgUrl('');
     setAdLinkUrl('');
     setAdPosition('sidebar');
-    setAdIsActive(true);
+    setAdIsActive(false); // Default to off (inactive) on reset/new ad
     setShowForm(false);
     setUploadNote('');
   };
@@ -93,47 +100,40 @@ export default function AdsManagementPage() {
     }
     const payload = { title: adTitle, imgUrl: adImgUrl, linkUrl: adLinkUrl, position: adPosition, isActive: adIsActive };
     try {
-      let res;
       if (editingId) {
-        res = await fetch(`/api/ads/${editingId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+        await updateAdAction(editingId, payload);
+        showAdminNotif('বিজ্ঞাপন আপডেট হয়েছে', 'success');
       } else {
-        res = await fetch('/api/ads', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+        await createAdAction(payload);
+        showAdminNotif('নতুন বিজ্ঞাপন যুক্ত হয়েছে', 'success');
       }
-      if (res.ok) {
-        showAdminNotif(editingId ? 'বিজ্ঞাপন আপডেট হয়েছে' : 'নতুন বিজ্ঞাপন যুক্ত হয়েছে', 'success');
-        resetForm();
-        loadAds();
-      } else {
-        const err = await res.json();
-        showAdminNotif(err.error || 'সংরক্ষণ ব্যর্থ', 'error');
-      }
-    } catch { showAdminNotif('সার্ভার ত্রুটি', 'error'); }
+      resetForm();
+      loadAds();
+    } catch (err: any) { 
+      showAdminNotif(err.message || 'সংরক্ষণ ব্যর্থ', 'error'); 
+    }
   };
 
   const handleDelete = async (id: string) => {
     if (!confirm('এই বিজ্ঞাপনটি ডিলিট করতে চান?')) return;
     try {
-      const res = await fetch(`/api/ads/${id}`, { method: 'DELETE' });
-      if (res.ok) {
-        showAdminNotif('বিজ্ঞাপন ডিলিট হয়েছে', 'success');
-        loadAds();
-        if (editingId === id) resetForm();
-      } else showAdminNotif('ডিলিট ব্যর্থ', 'error');
-    } catch { showAdminNotif('ডিলিট ত্রুটি', 'error'); }
+      await deleteAdAction(id);
+      showAdminNotif('বিজ্ঞাপন ডিলিট হয়েছে', 'success');
+      loadAds();
+      if (editingId === id) resetForm();
+    } catch (err: any) { 
+      showAdminNotif(err.message || 'ডিলিট ব্যর্থ', 'error'); 
+    }
   };
 
   const toggleActive = async (ad: any) => {
     try {
-      const res = await fetch(`/api/ads/${ad._id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isActive: !ad.isActive })
-      });
-      if (res.ok) {
-        showAdminNotif('বিজ্ঞাপন স্থিতি পরিবর্তন হয়েছে', 'success');
-        loadAds();
-      }
-    } catch { showAdminNotif('স্থিতি পরিবর্তন ব্যর্থ', 'error'); }
+      await updateAdAction(ad._id, { isActive: !ad.isActive });
+      showAdminNotif('বিজ্ঞাপন স্থিতি পরিবর্তন হয়েছে', 'success');
+      loadAds();
+    } catch (err: any) { 
+      showAdminNotif(err.message || 'স্থিতি পরিবর্তন ব্যর্থ', 'error'); 
+    }
   };
 
   return (

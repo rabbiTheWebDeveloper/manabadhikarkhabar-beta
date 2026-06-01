@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 
+import { getAdsAction } from '@/app/actions/ad';
+
 interface AdBannerProps {
   position: 'sidebar' | 'top_banner' | 'in_article' | 'below_header' | 'footer_banner';
   className?: string;
@@ -14,8 +16,7 @@ export default function AdBanner({ position, className = '', aspectRatio = 'aspe
   const [ads, setAds] = useState<any[]>([]);
 
   useEffect(() => {
-    fetch('/api/ads')
-      .then(r => r.json())
+    getAdsAction()
       .then(data => {
         const filtered = (data.ads || []).filter(
           (ad: any) => ad.position === position && ad.isActive

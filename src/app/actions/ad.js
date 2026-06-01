@@ -1,5 +1,7 @@
 "use server";
 
+import { cookies } from "next/headers";
+import { verifyToken } from "@/lib/auth-store";
 import {
   getAdsQuery,
   createAdQuery,
@@ -9,8 +11,17 @@ import {
 } from "@/queries/ad";
 import { revalidatePath } from "next/cache";
 
+// Helper to assert admin session authorization
+async function verifyAdmin() {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("kachua_session")?.value;
+  if (!token || !verifyToken(token)) {
+    throw new Error("অননুমোদিত অ্যাক্সেস! এই অপারেশনটির জন্য এডমিন লগইন আবশ্যক।");
+  }
+}
+
 /**
- * Fetch all ads Server Action
+ * Fetch all ads Server Action (Public)
  */
 export async function getAdsAction() {
   try {
@@ -21,7 +32,7 @@ export async function getAdsAction() {
 }
 
 /**
- * Fetch a single ad by ID Server Action
+ * Fetch a single ad by ID Server Action (Public)
  */
 export async function getAdByIdAction(id) {
   try {
@@ -32,10 +43,11 @@ export async function getAdByIdAction(id) {
 }
 
 /**
- * Create a new ad Server Action
+ * Create a new ad Server Action (Admin Only)
  */
 export async function createAdAction(data) {
   try {
+    await verifyAdmin();
     const response = await createAdQuery(data);
     
     // Revalidate paths where ads are shown
@@ -49,10 +61,11 @@ export async function createAdAction(data) {
 }
 
 /**
- * Update an ad by ID Server Action
+ * Update an ad by ID Server Action (Admin Only)
  */
 export async function updateAdAction(id, data) {
   try {
+    await verifyAdmin();
     const response = await updateAdQuery(id, data);
     
     // Revalidate paths where ads are shown
@@ -66,10 +79,11 @@ export async function updateAdAction(id, data) {
 }
 
 /**
- * Delete an ad by ID Server Action
+ * Delete an ad by ID Server Action (Admin Only)
  */
 export async function deleteAdAction(id) {
   try {
+    await verifyAdmin();
     const response = await deleteAdQuery(id);
     
     // Revalidate paths where ads are shown

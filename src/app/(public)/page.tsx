@@ -15,6 +15,7 @@ import { RelatedArticles } from '@/components/related-articles';
 import BreakingTicker from '@/components/public/BreakingTicker';
 import Footer from '@/components/public/Footer';
 import AdBanner from '@/components/AdBanner';
+import { getAdsAction } from '@/app/actions/ad';
 import Link from 'next/link';
 import { Article } from '@/lib/types';
 import { trackPageView } from '@/lib/analytics';
@@ -331,11 +332,8 @@ function PageContent() {
 
   const fetchAds = async () => {
     try {
-      const res = await fetch('/api/ads', { cache: 'no-store' });
-      if (res.ok) {
-        const data = await res.json();
-        setAds(data.ads || []);
-      }
+      const data = await getAdsAction();
+      setAds(data.ads || []);
     } catch (err) {
       console.error('Error loading ads:', err);
     }
