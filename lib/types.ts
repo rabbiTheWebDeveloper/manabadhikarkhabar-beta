@@ -40,3 +40,11 @@ export interface EPaperCollection {
   updatedAt: string;
 }
 
+export interface Category {
+  _id?: string;
+  value: string;
+  label: string;
+  order: number;
+  createdAt?: string;
+}
+

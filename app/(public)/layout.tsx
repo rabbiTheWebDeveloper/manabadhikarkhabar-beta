@@ -11,7 +11,7 @@ import BreakingTicker from '@/components/public/BreakingTicker';
 import Footer from '@/components/public/Footer';
 import AdBanner from '@/components/AdBanner';
 
-const CATEGORIES = [
+const STATIC_FALLBACK_CATEGORIES = [
   { value: 'all', label: 'প্রচ্ছদ' },
   { value: 'বিশেষ সংবাদ', label: 'বিশেষ সংবাদ' },
   { value: 'রাজনীতি', label: 'রাজনীতি' },
@@ -30,11 +30,37 @@ function PublicHeaderAndNav() {
   const currentCategory = searchParams.get('category') || 'all';
   const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [categories, setCategories] = useState<{ value: string; label: string }[]>(STATIC_FALLBACK_CATEGORIES);
 
   // Sync state if search parameter changes externally
   useEffect(() => {
     setSearchTerm(searchParams.get('search') || '');
   }, [searchParams]);
+
+  // Dynamically load categories from API
+  useEffect(() => {
+    let active = true;
+    fetch('/api/categories')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.categories && active) {
+          const formatted = data.categories.map((c: any) => ({
+            value: c.value,
+            label: c.label
+          }));
+          const hasAll = formatted.some((c: any) => c.value === 'all');
+          if (!hasAll) {
+            setCategories([{ value: 'all', label: 'প্রচ্ছদ' }, ...formatted]);
+          } else {
+            setCategories(formatted);
+          }
+        }
+      })
+      .catch(err => {
+        console.error('Failed to load dynamic categories, using static fallback.', err);
+      });
+    return () => { active = false; };
+  }, []);
 
   const handleCategorySelect = (val: string) => {
     setMobileMenuOpen(false);
@@ -135,7 +161,7 @@ function PublicHeaderAndNav() {
 
             <div className="text-xs font-bold text-gray-400 mb-1 uppercase tracking-wider">ক্যাটেগরি সমূহ</div>
             <ul className="flex flex-col gap-1 font-bangla">
-              {CATEGORIES.map(cat => (
+              {categories.map(cat => (
                 <li key={cat.value}>
                   <button
                     onClick={() => handleCategorySelect(cat.value)}
@@ -226,7 +252,7 @@ function PublicHeaderAndNav() {
       <nav className="border-b border-gray-200 sticky top-0 bg-white z-50 shadow-sm overflow-x-auto no-print">
         <div className="max-w-7xl mx-auto px-4">
           <ul className="flex items-center gap-6 text-[16px] font-bold text-gray-800 py-3.5 font-bangla whitespace-nowrap select-none">
-            {CATEGORIES.map(cat => (
+            {categories.map(cat => (
               <li 
                 key={cat.value}
                 onClick={() => handleCategorySelect(cat.value)}

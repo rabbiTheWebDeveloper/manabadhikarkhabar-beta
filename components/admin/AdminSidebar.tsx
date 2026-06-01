@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, FileText, Megaphone, Cpu, BookOpen,
-  Users, Settings, ChevronLeft, ChevronRight, LogOut, Newspaper
+  Users, Settings, ChevronLeft, ChevronRight, LogOut, Newspaper, FolderTree
 } from 'lucide-react';
 
 interface AdminSidebarProps {
@@ -17,6 +17,7 @@ interface AdminSidebarProps {
 const navItems = [
   { href: '/admin', label: 'ড্যাশবোর্ড', labelEn: 'Dashboard', icon: LayoutDashboard, exact: true },
   { href: '/admin/news', label: 'সংবাদ ব্যবস্থাপনা', labelEn: 'News', icon: FileText },
+  { href: '/admin/categories', label: 'ক্যাটেগরি', labelEn: 'Categories', icon: FolderTree },
   { href: '/admin/ads', label: 'বিজ্ঞাপন প্যানেল', labelEn: 'Ads', icon: Megaphone },
   { href: '/admin/crawler', label: 'নিউজ ক্রলার', labelEn: 'Crawler', icon: Cpu },
   { href: '/admin/epaper', label: 'ই-পেপার', labelEn: 'E-Paper', icon: BookOpen },

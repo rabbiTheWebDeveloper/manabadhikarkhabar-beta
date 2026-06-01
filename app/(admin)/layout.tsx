@@ -9,6 +9,7 @@ import AdminNotification from '@/components/admin/AdminNotification';
 const pageTitles: Record<string, string> = {
   '/admin': 'ড্যাশবোর্ড',
   '/admin/news': 'সংবাদ ব্যবস্থাপনা',
+  '/admin/categories': 'ক্যাটেগরি ব্যবস্থাপনা',
   '/admin/ads': 'বিজ্ঞাপন প্যানেল',
   '/admin/crawler': 'নিউজ ক্রলার কন্ট্রোল',
   '/admin/epaper': 'ই-পেপার ব্যবস্থাপনা',
