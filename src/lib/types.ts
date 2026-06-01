@@ -22,6 +22,7 @@ export interface Article {
   author: string;
   isLead: boolean;
   isSub: boolean;
+  isPublished?: boolean;
   publishDate?: string;
 }
 

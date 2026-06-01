@@ -12,9 +12,9 @@ import { revalidatePath } from "next/cache";
 /**
  * Fetch all articles Server Action
  */
-export async function getArticlesAction() {
+export async function getArticlesAction(onlyPublished = false) {
   try {
-    return await getArticlesQuery();
+    return await getArticlesQuery(onlyPublished);
   } catch (error) {
     throw new Error(error instanceof Error ? error.message : String(error));
   }

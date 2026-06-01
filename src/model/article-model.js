@@ -10,6 +10,7 @@ const ArticleSchema = new Schema(
     author: { type: String, default: "নিজস্ব প্রতিবেদক" },
     isLead: { type: Boolean, default: false, index: true },
     isSub: { type: Boolean, default: false, index: true },
+    isPublished: { type: Boolean, default: true, index: true },
     publishDate: { type: String, default: () => new Date().toISOString() }
   },
   {
@@ -23,6 +24,7 @@ const ArticleSchema = new Schema(
 ArticleSchema.index({ createdAt: -1 });
 ArticleSchema.index({ isLead: 1, createdAt: -1 });
 ArticleSchema.index({ category: 1, createdAt: -1 });
+ArticleSchema.index({ isPublished: 1, createdAt: -1 });
 
 export const ArticleModel =
   mongoose.models.Article ?? mongoose.model("Article", ArticleSchema);

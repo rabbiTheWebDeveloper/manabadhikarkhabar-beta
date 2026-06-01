@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import {
   Megaphone, Edit2, Trash2, Plus, X, Send,
-  ExternalLink, ToggleLeft, ToggleRight
+  ExternalLink, Loader2
 } from 'lucide-react';
 import { showAdminNotif } from '@/components/admin/AdminNotification';
 
@@ -18,6 +18,7 @@ export default function AdsManagementPage() {
   const [ads, setAds] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Form State
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -100,6 +101,7 @@ export default function AdsManagementPage() {
     }
     const payload = { title: adTitle, imgUrl: adImgUrl, linkUrl: adLinkUrl, position: adPosition, isActive: adIsActive };
     try {
+      setIsSubmitting(true);
       if (editingId) {
         await updateAdAction(editingId, payload);
         showAdminNotif('বিজ্ঞাপন আপডেট হয়েছে', 'success');
@@ -111,6 +113,8 @@ export default function AdsManagementPage() {
       loadAds();
     } catch (err: any) { 
       showAdminNotif(err.message || 'সংরক্ষণ ব্যর্থ', 'error'); 
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -138,63 +142,116 @@ export default function AdsManagementPage() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-black text-gray-900">বিজ্ঞাপন প্যানেল</h1>
-          <p className="text-sm text-gray-500">মোট {ads.length}টি বিজ্ঞাপন — {ads.filter(a => a.isActive).length}টি সক্রিয়</p>
+      {/* Header Dashboard Banner */}
+      <div className="relative overflow-hidden bg-gradient-to-r from-red-600 via-rose-600 to-orange-500 rounded-2xl p-6 md:p-8 text-white shadow-[0_10px_30px_-5px_rgba(225,29,72,0.3)]">
+        <div className="absolute top-0 right-0 -mt-6 -mr-6 w-48 h-48 rounded-full bg-white/10 blur-2xl"></div>
+        <div className="absolute bottom-0 left-0 -mb-6 -ml-6 w-32 h-32 rounded-full bg-black/10 blur-xl"></div>
+        <div className="relative flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+          <div className="space-y-2">
+            <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight flex items-center gap-3">
+              <Megaphone className="w-8 h-8 animate-bounce" />
+              <span>বিজ্ঞাপন নিয়ন্ত্রণ প্যানেল</span>
+            </h1>
+            <p className="text-white/80 text-sm max-w-xl font-medium">
+              পোর্টালের বিভিন্ন সেকশনের বিজ্ঞাপনগুলি এখান থেকে নিয়ন্ত্রণ করুন। নতুন ক্যাম্পেইন তৈরি করুন অথবা বিদ্যমান বিজ্ঞাপনটির অবস্থান পরিবর্তন করুন।
+            </p>
+            <div className="flex gap-4 pt-1">
+              <div className="bg-white/15 backdrop-blur-md rounded-lg px-3 py-1.5 text-xs font-bold border border-white/10">
+                মোট বিজ্ঞাপন: {ads.length}টি
+              </div>
+              <div className="bg-emerald-500/30 backdrop-blur-md rounded-lg px-3 py-1.5 text-xs font-bold border border-emerald-500/20 text-emerald-100 flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-ping"></span>
+                সক্রিয়: {ads.filter(a => a.isActive).length}টি
+              </div>
+            </div>
+          </div>
+          <button 
+            onClick={() => { resetForm(); setShowForm(true); }}
+            disabled={showForm}
+            className="flex items-center justify-center gap-2 bg-white hover:bg-red-50 text-red-600 font-extrabold text-sm px-6 py-3.5 rounded-xl transition-all cursor-pointer shadow-lg hover:shadow-xl active:scale-95 disabled:opacity-50 disabled:pointer-events-none self-start md:self-center"
+          >
+            <Plus className="w-4 h-4" />
+            <span>নতুন বিজ্ঞাপন যুক্ত করুন</span>
+          </button>
         </div>
-        <button onClick={() => { resetForm(); setShowForm(true); }}
-          className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white font-bold text-sm px-4 py-2.5 rounded-lg transition-colors cursor-pointer shadow-sm">
-          <Plus className="w-4 h-4" /><span>নতুন বিজ্ঞাপন</span>
-        </button>
       </div>
 
-      {/* Form */}
+      {/* Form Container */}
       {showForm && (
-        <div className="bg-white rounded-xl border border-gray-200 shadow-lg p-6 animate-scale-in">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-lg font-extrabold text-gray-900 flex items-center gap-2">
-              <Megaphone className="w-5 h-5 text-red-600" />
-              <span>{editingId ? 'বিজ্ঞাপন সংশোধন' : 'নতুন বিজ্ঞাপন'}</span>
-            </h2>
-            <button onClick={resetForm} className="p-2 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-700 cursor-pointer"><X className="w-5 h-5" /></button>
-          </div>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1">ক্যাম্পেইন নাম *</label>
-                <input type="text" placeholder="ওয়ালটন মেগা সেল..." value={adTitle} onChange={e => setAdTitle(e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-400" required />
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-[0_15px_50px_-15px_rgba(0,0,0,0.08)] p-6 md:p-8 animate-scale-in">
+          <div className="flex justify-between items-center border-b border-gray-100 pb-4 mb-6">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-red-50 text-red-600 rounded-xl flex items-center justify-center">
+                <Megaphone className="w-5 h-5" />
               </div>
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1">অবস্থান *</label>
-                <select value={adPosition} onChange={e => setAdPosition(e.target.value as any)}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500/20 cursor-pointer">
-                  <option value="sidebar">সাইডবার</option>
-                  <option value="top_banner">হেডার ব্যানার</option>
+                <h2 className="text-lg font-black text-gray-900">
+                  {editingId ? 'বিজ্ঞাপন তথ্য সংশোধন' : 'নতুন বিজ্ঞাপন ক্যাম্পেইন'}
+                </h2>
+                <p className="text-xs text-gray-400">তারকা চিহ্নিত (*) ঘরগুলো অবশ্যই পূরণ করুন</p>
+              </div>
+            </div>
+            <button 
+              onClick={resetForm} 
+              disabled={isSubmitting}
+              className="p-2 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-700 cursor-pointer disabled:opacity-40 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Campaign Title */}
+              <div>
+                <label className="block text-xs font-black text-gray-500 uppercase tracking-wider mb-2">ক্যাম্পেইন নাম *</label>
+                <input 
+                  type="text" 
+                  disabled={isSubmitting}
+                  placeholder="যেমন: ওয়ালটন মেগা অফার..." 
+                  value={adTitle} 
+                  onChange={e => setAdTitle(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-red-500/10 focus:border-red-500 transition-all text-sm font-semibold disabled:bg-gray-50 placeholder:text-gray-300" 
+                  required 
+                />
+              </div>
+
+              {/* Campaign Position */}
+              <div>
+                <label className="block text-xs font-black text-gray-500 uppercase tracking-wider mb-2">বিজ্ঞাপনের অবস্থান *</label>
+                <select 
+                  value={adPosition} 
+                  disabled={isSubmitting}
+                  onChange={e => setAdPosition(e.target.value as any)}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-red-500/10 focus:border-red-500 transition-all text-sm font-semibold cursor-pointer disabled:bg-gray-50"
+                >
+                  <option value="sidebar">সাইডবার ব্যানার</option>
+                  <option value="top_banner">শীর্ষ হেডার ব্যানার</option>
                 </select>
               </div>
+
+              {/* Banner Image URL & Upload */}
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1">ব্যানার ইমেজ *</label>
+                <label className="block text-xs font-black text-gray-500 uppercase tracking-wider mb-2">ব্যানার ইমেজ লিংক *</label>
                 <div className="space-y-2">
                   <div className="flex gap-2">
                     <input 
                       type="url" 
-                      placeholder="ইমেজ URL (https://...)" 
+                      disabled={isSubmitting}
+                      placeholder="ইমেজ লিংক (https://...)" 
                       value={adImgUrl} 
                       onChange={e => setAdImgUrl(e.target.value)}
-                      className="flex-1 px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500/20 text-xs font-mono" 
+                      className="flex-1 px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-red-500/10 focus:border-red-500 transition-all text-xs font-mono disabled:bg-gray-50 placeholder:text-gray-300" 
                       required 
                     />
-                    <label className={`relative flex items-center justify-center gap-1.5 px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg border border-gray-200 text-xs font-bold transition-all shadow-xs cursor-pointer active:scale-95 shrink-0 ${isUploading ? 'opacity-50 pointer-events-none' : ''}`}>
+                    <label className={`relative flex items-center justify-center gap-1.5 px-5 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl border border-gray-200 text-xs font-extrabold transition-all shadow-xs cursor-pointer active:scale-95 shrink-0 ${isUploading || isSubmitting ? 'opacity-50 pointer-events-none' : ''}`}>
                       <input 
                         type="file" 
                         accept="image/*" 
                         onChange={handleFileChange} 
                         className="hidden" 
                       />
-                      <span>{isUploading ? 'আপলোড হচ্ছে...' : 'আপলোড ফাইল'}</span>
+                      <span>{isUploading ? 'আপলোড হচ্ছে...' : 'ফাইল আপলোড'}</span>
                     </label>
                   </div>
                   {uploadNote && (
@@ -206,92 +263,172 @@ export default function AdsManagementPage() {
                   )}
                 </div>
               </div>
+
+              {/* Click URL */}
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1">ক্লিক লিংক *</label>
-                <input type="url" placeholder="https://..." value={adLinkUrl} onChange={e => setAdLinkUrl(e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500/20 text-sm font-mono" required />
+                <label className="block text-xs font-black text-gray-500 uppercase tracking-wider mb-2">ক্লিক ডেস্টিনেশন লিংক *</label>
+                <input 
+                  type="url" 
+                  disabled={isSubmitting}
+                  placeholder="ইউজার যে লিংকে যাবে (https://...)" 
+                  value={adLinkUrl} 
+                  onChange={e => setAdLinkUrl(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-red-500/10 focus:border-red-500 transition-all text-xs font-mono disabled:bg-gray-50 placeholder:text-gray-300" 
+                  required 
+                />
               </div>
             </div>
+
+            {/* Preview Banner */}
             {adImgUrl && (
-              <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg">
-                <p className="text-[10px] text-gray-400 font-bold mb-2">ব্যানার প্রিভিউ:</p>
-                <div className="w-full max-w-md bg-gray-100 rounded-lg overflow-hidden border shadow-inner">
+              <div className="p-4 bg-gray-50 border border-gray-100 rounded-xl">
+                <p className="text-[10px] text-gray-400 font-extrabold uppercase tracking-wider mb-2.5">ব্যানার ইমেজ প্রিভিউ</p>
+                <div className="w-full max-w-lg bg-white rounded-xl overflow-hidden border border-gray-200/60 shadow-inner flex items-center justify-center p-2">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={adImgUrl} alt="Preview" className="w-full h-auto block object-contain" referrerPolicy="no-referrer"
-                    onError={(e) => { (e.target as any).src = 'https://placehold.co/600x400?text=Invalid+URL'; }} />
+                  <img 
+                    src={adImgUrl} 
+                    alt="Preview" 
+                    className="w-full h-auto max-h-[220px] block object-contain rounded-lg" 
+                    referrerPolicy="no-referrer"
+                    onError={(e) => { (e.target as any).src = 'https://placehold.co/600x400?text=Invalid+Banners+URL'; }} 
+                  />
                 </div>
               </div>
             )}
-            <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
-              <input type="checkbox" id="adActive" checked={adIsActive} onChange={e => setAdIsActive(e.target.checked)}
-                className="rounded text-red-600 focus:ring-red-500 w-4 h-4 cursor-pointer" />
-              <label htmlFor="adActive" className="text-sm font-bold text-gray-700 cursor-pointer select-none">এখনই সক্রিয় করুন</label>
+
+            {/* Active Status Toggle */}
+            <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl border border-gray-100">
+              <input 
+                type="checkbox" 
+                id="adActive" 
+                disabled={isSubmitting}
+                checked={adIsActive} 
+                onChange={e => setAdIsActive(e.target.checked)}
+                className="rounded text-red-600 focus:ring-red-500 w-5 h-5 cursor-pointer disabled:cursor-not-allowed border-gray-300" 
+              />
+              <div>
+                <label htmlFor="adActive" className="text-sm font-black text-gray-700 cursor-pointer select-none disabled:opacity-50">বিজ্ঞাপনটি এখনই সক্রিয় করুন</label>
+                <p className="text-[11px] text-gray-400">সক্রিয় না করলে এটি পোর্টালের কোথাও প্রদর্শিত হবে না</p>
+              </div>
             </div>
-            <div className="flex gap-3">
-              <button type="submit"
-                className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2 cursor-pointer shadow-sm">
-                <Send className="w-4 h-4" />
-                <span>{editingId ? 'আপডেট করুন' : 'পোস্ট করুন'}</span>
+
+            {/* Submit & Cancel Buttons */}
+            <div className="flex gap-3 pt-2">
+              <button 
+                type="submit"
+                disabled={isSubmitting || isUploading}
+                className="flex-1 bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white font-extrabold py-3.5 rounded-xl flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed shadow-md hover:shadow-lg transition-all active:scale-[0.99]"
+              >
+                {isSubmitting ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  <Send className="w-4 h-4" />
+                )}
+                <span>{isSubmitting ? 'সংরক্ষণ করা হচ্ছে...' : editingId ? 'বিজ্ঞাপন আপডেট করুন' : 'বিজ্ঞাপন পাবলিশ করুন'}</span>
               </button>
-              <button type="button" onClick={resetForm}
-                className="px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-lg cursor-pointer">বাতিল</button>
+              <button 
+                type="button" 
+                onClick={resetForm}
+                disabled={isSubmitting}
+                className="px-6 py-3.5 bg-gray-100 hover:bg-gray-200 disabled:opacity-40 text-gray-700 font-extrabold rounded-xl cursor-pointer disabled:cursor-not-allowed transition-all"
+              >
+                বাতিল
+              </button>
             </div>
           </form>
         </div>
       )}
 
-      {/* Ads Grid */}
+      {/* Ads Grid Grid Section */}
       {loading ? (
-        <div className="p-16 text-center">
-          <div className="w-8 h-8 border-3 border-red-600 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
-          <p className="text-sm text-gray-500">লোড হচ্ছে...</p>
+        <div className="bg-white rounded-2xl border border-gray-100 p-20 text-center shadow-sm">
+          <Loader2 className="w-10 h-10 text-red-600 animate-spin mx-auto mb-4" />
+          <p className="text-sm text-gray-500 font-semibold">বিজ্ঞাপন লোড হচ্ছে, দয়া করে অপেক্ষা করুন...</p>
         </div>
       ) : ads.length === 0 ? (
-        <div className="bg-white rounded-xl border border-gray-200 p-16 text-center">
-          <Megaphone className="w-12 h-12 text-gray-200 mx-auto mb-3" />
-          <p className="font-bold text-gray-500 mb-1">কোনো বিজ্ঞাপন নেই</p>
-          <p className="text-xs text-gray-400">প্রথম বিজ্ঞাপন তৈরি করুন</p>
+        <div className="bg-white rounded-2xl border border-gray-100 p-20 text-center shadow-sm">
+          <Megaphone className="w-14 h-14 text-gray-300 mx-auto mb-4 animate-pulse" />
+          <p className="font-black text-gray-600 mb-1">কোনো বিজ্ঞাপন ক্যাম্পেইন পাওয়া যায়নি</p>
+          <p className="text-xs text-gray-400">ড্যাশবোর্ডের উপরে "নতুন বিজ্ঞাপন যুক্ত করুন" বাটনে ক্লিক করে প্রথম বিজ্ঞাপন যুক্ত করুন।</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {ads.map((ad) => (
-            <div key={ad._id} className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden hover:shadow-md transition-shadow group">
-              <div className="relative bg-gray-100 overflow-hidden border-b border-gray-100 flex items-center justify-center min-h-[160px]">
+            <div 
+              key={ad._id} 
+              className="bg-white rounded-2xl border border-gray-100 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] overflow-hidden hover:shadow-[0_15px_30px_-5px_rgba(0,0,0,0.1)] transition-all duration-300 hover:-translate-y-1 group flex flex-col justify-between"
+            >
+              {/* Media Preview Box */}
+              <div className="relative bg-gray-50 overflow-hidden border-b border-gray-100 flex items-center justify-center min-h-[180px] p-4">
+                {/* Subtle checkered overlay for transparent images */}
+                <div className="absolute inset-0 opacity-[0.02] bg-[radial-gradient(#000_1px,transparent_1px)] [background-size:16px_16px]"></div>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={ad.imgUrl} alt={ad.title} className="w-full h-auto max-h-[220px] object-contain group-hover:scale-[1.02] transition-transform duration-350" referrerPolicy="no-referrer" />
-                <div className="absolute top-3 right-3">
-                  <button onClick={() => toggleActive(ad)} className="cursor-pointer" title="Toggle active">
+                <img 
+                  src={ad.imgUrl} 
+                  alt={ad.title} 
+                  className="w-full h-auto max-h-[190px] object-contain group-hover:scale-[1.03] transition-all duration-500 rounded-lg drop-shadow-sm" 
+                  referrerPolicy="no-referrer" 
+                />
+                
+                {/* Badges Box */}
+                <div className="absolute top-3.5 right-3.5">
+                  <button 
+                    onClick={() => toggleActive(ad)} 
+                    className="cursor-pointer transition-transform active:scale-90" 
+                    title="ক্লিক করে স্থিতি পরিবর্তন করুন"
+                  >
                     {ad.isActive ? (
-                      <span className="flex items-center gap-1 bg-emerald-500 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-lg">
-                        <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></span> সক্রিয়
+                      <span className="flex items-center gap-1.5 bg-emerald-500 text-white text-[10px] font-extrabold px-3 py-1.5 rounded-full shadow-[0_4px_10px_rgba(16,185,129,0.3)]">
+                        <span className="w-1.5 h-1.5 bg-white rounded-full animate-ping"></span> সক্রিয়
                       </span>
                     ) : (
-                      <span className="flex items-center gap-1 bg-gray-500 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-lg">বন্ধ</span>
+                      <span className="flex items-center gap-1.5 bg-gray-400 text-white text-[10px] font-extrabold px-3 py-1.5 rounded-full shadow-[0_4px_10px_rgba(156,163,175,0.3)]">
+                        বন্ধ
+                      </span>
                     )}
                   </button>
                 </div>
-                <div className="absolute top-3 left-3">
-                  <span className={`text-[10px] font-bold px-2 py-1 rounded-full shadow-lg ${
-                    ad.position === 'sidebar' ? 'bg-blue-500 text-white' : 'bg-orange-500 text-white'
-                  }`}>{ad.position === 'sidebar' ? 'সাইডবার' : 'হেডার'}</span>
+                <div className="absolute top-3.5 left-3.5">
+                  <span className={`text-[10px] font-extrabold px-3 py-1.5 rounded-full shadow-[0_4px_10px_rgba(0,0,0,0.03)] border border-white/20 ${
+                    ad.position === 'sidebar' ? 'bg-blue-600 text-white' : 'bg-orange-500 text-white'
+                  }`}>{ad.position === 'sidebar' ? 'সাইডবার' : 'শীর্ষ ব্যানার'}</span>
                 </div>
               </div>
 
-              {/* Ad Info */}
-              <div className="p-4">
-                <h3 className="font-bold text-gray-900 text-sm truncate mb-2">{ad.title}</h3>
-                <div className="flex items-center justify-between">
-                  <a href={ad.linkUrl} target="_blank" rel="noopener noreferrer"
-                    className="text-[11px] text-blue-600 hover:text-blue-700 font-bold flex items-center gap-1 transition-colors">
-                    <span>লিংক ভিজিট</span><ExternalLink className="w-3 h-3" />
+              {/* Content Box */}
+              <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
+                <div>
+                  <h3 className="font-extrabold text-gray-800 text-sm group-hover:text-red-600 transition-colors line-clamp-1 mb-1" title={ad.title}>
+                    {ad.title}
+                  </h3>
+                  <p className="text-[10px] text-gray-400 font-semibold tracking-wider uppercase">পজিশন: {ad.position === 'sidebar' ? 'সাইডবার উইজেট' : 'হেডার সেকশন'}</p>
+                </div>
+
+                <div className="flex items-center justify-between border-t border-gray-50 pt-4">
+                  <a 
+                    href={ad.linkUrl} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-[11px] text-blue-600 hover:text-blue-700 font-extrabold flex items-center gap-1 transition-colors group/link"
+                  >
+                    <span>লিংক ভিজিট</span>
+                    <ExternalLink className="w-3.5 h-3.5 group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5 transition-transform" />
                   </a>
-                  <div className="flex gap-1.5">
-                    <button onClick={() => startEdit(ad)}
-                      className="p-1.5 bg-gray-50 hover:bg-gray-100 text-gray-600 rounded-lg border border-gray-200 cursor-pointer transition-colors">
+                  
+                  {/* Actions Buttons */}
+                  <div className="flex gap-2">
+                    <button 
+                      onClick={() => startEdit(ad)}
+                      title="বিজ্ঞাপন সংশোধন"
+                      className="p-2 bg-gray-50 hover:bg-gray-100 hover:text-red-600 text-gray-500 rounded-xl border border-gray-100 cursor-pointer transition-all duration-200"
+                    >
                       <Edit2 className="w-3.5 h-3.5" />
                     </button>
-                    <button onClick={() => handleDelete(ad._id)}
-                      className="p-1.5 bg-red-50 hover:bg-red-600 text-red-600 hover:text-white rounded-lg border border-red-100 cursor-pointer transition-all">
+                    <button 
+                      onClick={() => handleDelete(ad._id)}
+                      title="বিজ্ঞাপন ডিলিট করুন"
+                      className="p-2 bg-red-50 hover:bg-red-600 text-red-600 hover:text-white rounded-xl border border-red-100/60 cursor-pointer transition-all duration-200"
+                    >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   </div>

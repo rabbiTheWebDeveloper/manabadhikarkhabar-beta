@@ -16,7 +16,10 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    const result = await getArticlesQuery();
+    const { searchParams } = new URL(req.url);
+    const onlyPublished = searchParams.get('published') === 'true';
+
+    const result = await getArticlesQuery(onlyPublished);
     return NextResponse.json(result);
   } catch (error: any) {
     return NextResponse.json({ error: error.message || 'Fatal error fetching articles' }, { status: 500 });

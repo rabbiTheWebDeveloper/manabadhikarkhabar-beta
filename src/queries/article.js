@@ -17,18 +17,19 @@ async function isDbConnected() {
 /**
  * Fetch all articles, seeding the database with fallbacks if empty
  */
-export async function getArticlesQuery() {
+export async function getArticlesQuery(onlyPublished = false) {
   const hasDb = await isDbConnected();
 
   if (hasDb) {
     try {
-      let articles = await ArticleModel.find({}).sort({ createdAt: -1 }).lean();
+      const filter = onlyPublished ? { isPublished: { $ne: false } } : {};
+      let articles = await ArticleModel.find(filter).sort({ createdAt: -1 }).lean();
       
       // If database is empty, seed it initially from initial memory records
       if (articles.length === 0) {
         const seedDocs = memoryArticles.map(({ _id, ...rest }) => ({ ...rest }));
         await ArticleModel.insertMany(seedDocs);
-        articles = await ArticleModel.find({}).sort({ createdAt: -1 }).lean();
+        articles = await ArticleModel.find(filter).sort({ createdAt: -1 }).lean();
       }
 
       return {
@@ -41,8 +42,9 @@ export async function getArticlesQuery() {
   }
 
   // Fallback local memory storage
+  const list = onlyPublished ? memoryArticles.filter(a => a.isPublished !== false) : memoryArticles;
   return {
-    articles: memoryArticles,
+    articles: list,
     source: 'local_fallback_db'
   };
 }
@@ -63,6 +65,7 @@ export async function createArticleQuery(data) {
     author: author || 'নিজস্ব প্রতিবেদক',
     isLead: !!isLead,
     isSub: !!isSub,
+    isPublished: data.isPublished !== false,
     publishDate: publishDate || new Date().toISOString()
   };
 
@@ -145,6 +148,7 @@ export async function updateArticleQuery(id, updatedData) {
   if (updatedData.author !== undefined) cleanUpdates.author = updatedData.author;
   if (updatedData.isLead !== undefined) cleanUpdates.isLead = !!updatedData.isLead;
   if (updatedData.isSub !== undefined) cleanUpdates.isSub = !!updatedData.isSub;
+  if (updatedData.isPublished !== undefined) cleanUpdates.isPublished = !!updatedData.isPublished;
   if (updatedData.publishDate !== undefined) cleanUpdates.publishDate = updatedData.publishDate;
 
   if (hasDb) {
