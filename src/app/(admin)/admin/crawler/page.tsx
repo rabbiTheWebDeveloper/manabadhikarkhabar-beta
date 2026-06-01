@@ -10,7 +10,25 @@ export default function CrawlerControlPage() {
   const [scraperStatus, setScraperStatus] = useState<any>({ isRunning: false, lastRun: 0, count: 0, message: '' });
   const [scraperLoading, setScraperLoading] = useState(false);
 
-  const fetchStatus = async () => { try { const r = await fetch('/api/scraper/scrape'); if (r.ok) { const d = await r.json(); if (d.status) setScraperStatus(d.status); } } catch {} };
+  const fetchStatus = async () => { 
+    try { 
+      const r = await fetch('/api/scraper/scrape'); 
+      if (r.ok) { 
+        const d = await r.json(); 
+        if (d.status) {
+          const pAlo = d.status.prothomAlo || { isRunning: false, lastRun: 0, count: 0 };
+          const mKhb = d.status.manabadhikar || { isRunning: false, lastRun: 0, count: 0 };
+          
+          setScraperStatus({
+            isRunning: pAlo.isRunning || mKhb.isRunning,
+            lastRun: Math.max(pAlo.lastRun, mKhb.lastRun),
+            count: pAlo.count + mKhb.count,
+            message: pAlo.message + ' | ' + mKhb.message
+          });
+        } 
+      } 
+    } catch {} 
+  };
   const loadArticles = async () => { try { const r = await fetch('/api/articles'); if (r.ok) { const d = await r.json(); setArticles(d.articles || []); } } catch {} };
 
   useEffect(() => { fetchStatus(); loadArticles(); }, []);
@@ -32,7 +50,7 @@ export default function CrawlerControlPage() {
     try { const r = await fetch(`/api/articles/${id}`, { method: 'DELETE' }); if (r.ok) { showAdminNotif('ডিলিট হয়েছে', 'success'); loadArticles(); } } catch {}
   };
 
-  const crawled = articles.filter(a => ['প্রথম আলো','কুরিয়ার নিউজ','রয়টার্স','এএফপি'].includes(a.author)).slice(0, 12);
+  const crawled = articles.filter(a => ['প্রথম আলো','কুরিয়ার নিউজ','রয়টার্স','এএফপি','মানবাধিকার খবর'].includes(a.author)).slice(0, 12);
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">

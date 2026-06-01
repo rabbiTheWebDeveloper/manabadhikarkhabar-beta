@@ -1,4 +1,5 @@
-import { getDb, Article } from './db';
+import { dbConnect } from '@/service/mongo';
+import { ArticleModel } from '@/model/article-model';
 import { memoryArticles } from '@/app/api/articles/store';
 import { GoogleGenAI } from '@google/genai';
 
@@ -435,7 +436,7 @@ async function fetchStoryContent(url: string, headline: string, section: string)
 }
 
 /**
- * Main scraper controller
+ * Main scraper controller — scrapes ALL stories and saves to MongoDB via ArticleModel
  */
 export async function scrapeLatestNews(): Promise<{ success: boolean; count: number; message: string }> {
   if (lastScrapeStatus.isRunning) {
@@ -537,106 +538,96 @@ export async function scrapeLatestNews(): Promise<{ success: boolean; count: num
       'বিশেষ সংবাদ': 'বিশেষ সংবাদ'
     };
 
-    // Initialize database
-    const { db, isUsingFallback } = await getDb();
-    
-    // Select top 6 most recent stories to scrape to maintain high speed and prevent request hogging
-    const candidateStories = rawStories.slice(0, 6);
+    // Check Mongoose connection
+    let useMongoose = false;
+    try {
+      await dbConnect();
+      useMongoose = true;
+    } catch (err) {
+      console.warn('[Scraper] Mongoose connection unavailable.', err);
+    }
+
+    const candidateStories = rawStories;
     let successfullySavedCount = 0;
+    let skippedCount = 0;
 
     for (const s of candidateStories) {
       const title = s.headline;
       if (!title) continue;
 
-      // Check if article already exists (by comparing title)
+      // Check for duplicates
       let exists = false;
-      if (!isUsingFallback && db) {
-        const count = await db.collection('articles').countDocuments({ title });
-        exists = count > 0;
+      if (useMongoose) {
+        exists = (await ArticleModel.countDocuments({ title })) > 0;
       } else {
         exists = memoryArticles.some(art => art.title === title);
       }
 
       if (exists) {
-        console.log(`Story already in DB, skipping: "${title}"`);
+        skippedCount++;
         continue;
       }
 
-      console.log(`Scraping new story: "${title}"`);
-
-      // Determine category mapping
+      // Format data
+      let imgUrl = s['hero-image-s3-key'] ? `https://media.prothomalo.com/${s['hero-image-s3-key']}` : 'https://picsum.photos/seed/latest-news/600/400';
+      const publishedAt = s['last-published-at'] || s['published-at'] || Date.now();
+      const relativeTimeStr = formatBengaliTime(publishedAt);
+      
       let finalCategory = '';
-      let matchedPredefined = false;
       if (s.sections && Array.isArray(s.sections)) {
         for (const sec of s.sections) {
-          const name = typeof sec === 'string' ? sec : (sec?.name || '');
-          if (name && categoryMapping[name]) {
-            finalCategory = categoryMapping[name];
-            matchedPredefined = true;
+          if (sec?.name && categoryMapping[sec.name]) {
+            finalCategory = categoryMapping[sec.name];
             break;
           }
         }
       }
 
-      // Format image URL
-      let imgUrl = 'https://picsum.photos/seed/latest-news/600/400';
-      if (s['hero-image-s3-key']) {
-        if (s['hero-image-s3-key'].startsWith('http')) {
-          imgUrl = s['hero-image-s3-key'];
-        } else {
-          imgUrl = `https://media.prothomalo.com/${s['hero-image-s3-key']}`;
-        }
-      }
-
-      // Format time
-      const publishedAt = s['last-published-at'] || s['published-at'] || Date.now();
-      const relativeTimeStr = formatBengaliTime(publishedAt);
-
-      // Fetch paragraphs
       const bodyContent = await fetchStoryContent(s.url, title, finalCategory || 'বাংলাদেশ');
-
-      // Customize/Determine category with AI classification if predefined did not match perfectly
-      if (!matchedPredefined) {
-        console.log(`Predefined category mismatch or not found for "${title}". Analyzing with Gemini...`);
+      if (!finalCategory) {
         finalCategory = await analyzeCategoryWithAI(title, bodyContent);
-        console.log(`Gemini cataloged category as: "${finalCategory}"`);
-      } else {
-        finalCategory = finalCategory || 'বাংলাদেশ';
       }
 
-      const authorName = s['author-name'] || 'রয়টার্স';
+      const authorName = s['author-name'] || 'প্রথম আলো';
 
-      // Insert article
-      const newDoc: Omit<Article, '_id'> = {
+      // Save article using Mongoose ArticleModel
+      const articleData = {
         title,
         content: bodyContent,
         category: finalCategory,
         imgUrl,
         time: relativeTimeStr,
         author: authorName,
-        isLead: false, // Don't override primary custom leads of the Kachua Protidin admin
-        isSub: true,   // Add as sub story to populate lists
+        isLead: false,
+        isSub: true,
+        isPublished: true,
         publishDate: new Date(publishedAt).toISOString()
       };
 
-      if (!isUsingFallback && db) {
-        await db.collection('articles').insertOne(newDoc);
+      if (useMongoose) {
+        try {
+          const doc = new ArticleModel(articleData);
+          await doc.save();
+          successfullySavedCount++;
+        } catch (saveErr: any) {
+          console.error(`[Scraper] Failed to save "${title}":`, saveErr.message);
+        }
       } else {
-        // Feed into top of local store
-        const memoryDoc: Article = {
-          ...newDoc,
+        const memoryDoc = {
+          ...articleData,
           _id: `scraped-${Date.now()}-${Math.floor(Math.random() * 10000)}`
         };
-        memoryArticles.unshift(memoryDoc);
+        memoryArticles.unshift(memoryDoc as any);
+        successfullySavedCount++;
       }
-
-      successfullySavedCount++;
     }
+
+    console.log(`[Scraper] Complete! Saved: ${successfullySavedCount}, Skipped: ${skippedCount}, Total: ${rawStories.length}`);
 
     lastScrapeStatus.lastRun = Date.now();
     lastScrapeStatus.isRunning = false;
     lastScrapeStatus.count = successfullySavedCount;
-    lastScrapeStatus.message = `সফলভাবে শেষ হয়েছে! ${successfullySavedCount}টি নতুন খবর সেভ করা হয়েছে।`;
+    lastScrapeStatus.message = `সফলভাবে ${successfullySavedCount}টি নতুন খবর সেভ হয়েছে। ${skippedCount}টি ডুপ্লিকেট বাদ।`;
 
     return {
       success: true,
@@ -653,5 +644,279 @@ export async function scrapeLatestNews(): Promise<{ success: boolean; count: num
       count: 0,
       message: lastScrapeStatus.message
     };
+  }
+}
+
+// ─────────────────────────────────────────────────────────
+// Manabadhikar Khabar Scraper (manabadhikarkhabar.com)
+// ─────────────────────────────────────────────────────────
+
+export let manabadhikarScrapeStatus: ScrapeStatus = {
+  isRunning: false,
+  lastRun: 0,
+  count: 0,
+  message: 'এখনো স্ক্র্যাপ করা হয়নি'
+};
+
+// Category mapping from manabadhikarkhabar.com category IDs to our categories
+const MANABADHIKAR_CATEGORY_MAP: { [key: string]: string } = {
+  '1': 'রাজনীতি',
+  '2': 'বিশ্ব',
+  '3': 'বাণিজ্য',
+  '4': 'খেলা',
+  '5': 'বিনোদন',
+  '7': 'বিশেষ সংবাদ',     // ইসলাম
+  '8': 'বাংলাদেশ',         // সারাদেশ
+  '9': 'বিনোদন',           // লাইফস্টাইল
+  '10': 'মতামত',           // সাহিত্য ও সাময়িকি
+  '11': 'বাংলাদেশ',        // পরিবেশ
+  '12': 'মতামত',           // সাক্ষাতকার
+  '13': 'মতামত',           // সম্পাদকীয়
+  '14': 'বাংলাদেশ',        // পর্যটন
+  '15': 'বিশেষ সংবাদ',    // অধিকারের প্রতিবেদন
+  '16': 'মতামত',           // প্রবন্ধ
+  '17': 'বিশেষ সংবাদ',    // বিশেষ প্রতিবেদন
+  '18': 'বিশেষ সংবাদ',    // মানব দুর্ভোগ
+  '19': 'বাংলাদেশ',        // শিশু-কিশোর
+  '20': 'বিশেষ সংবাদ',    // বিজ্ঞান-প্রযুক্তি
+  '21': 'বিশেষ সংবাদ',    // বিশেষ ঘোষণা
+  '22': 'অপরাধ',           // আইন ও পরামর্শ
+  '31': 'বিশেষ সংবাদ',    // চলতি সংখ্যা
+  '35': 'বাংলাদেশ',        // জাতীয়
+};
+
+/**
+ * Parse HTML and extract text content from a tag by simple regex
+ */
+function extractById(html: string, id: string): string {
+  const regex = new RegExp(`id=["']${id}["'][^>]*>([\\s\\S]*?)<\\/`, 'i');
+  const match = regex.exec(html);
+  if (!match) return '';
+  return match[1].replace(/<[^>]*>/g, '').trim();
+}
+
+/**
+ * Parse the article detail page from manabadhikarkhabar.com
+ */
+async function parseManabadhikarArticle(articleId: string): Promise<{
+  title: string; content: string; category: string; imgUrl: string; publishDate: string;
+} | null> {
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 10000);
+    const res = await fetch(`https://manabadhikarkhabar.com/details.php?id=${articleId}`, {
+      signal: controller.signal
+    });
+    clearTimeout(timer);
+
+    if (!res.ok) return null;
+    const html = await res.text();
+
+    // Extract title: <span id="newscaption1_new">...</span>
+    const title = extractById(html, 'newscaption1_new');
+    if (!title) return null;
+
+    // Extract category from the category link near #newsbbb or from detailsview.php?id=X
+    let category = 'বাংলাদেশ';
+    const catLinkMatch = html.match(/detailsview\.php\?id=(\d+)/);
+    if (catLinkMatch) {
+      category = MANABADHIKAR_CATEGORY_MAP[catLinkMatch[1]] || 'বাংলাদেশ';
+    }
+    // Also try extracting Bengali category name
+    const catNameMatch = html.match(/id=["']newsbbb["'][^>]*>[\s\S]*?<font[^>]*>([\s\S]*?)<\/font>/i);
+    if (catNameMatch) {
+      const rawCat = catNameMatch[1].replace(/<[^>]*>/g, '').trim();
+      if (rawCat) {
+        // Map common names
+        const catMap: { [key: string]: string } = {
+          'রাজনীতি': 'রাজনীতি', 'আন্তর্জাতিক': 'বিশ্ব', 'অর্থনীতি-ব্যবসা': 'বাণিজ্য',
+          'খেলাধুলা': 'খেলা', 'বিনোদন': 'বিনোদন', 'সারাদেশ': 'বাংলাদেশ',
+          'সম্পাদকীয়': 'মতামত', 'বিশেষ প্রতিবেদন': 'বিশেষ সংবাদ', 'জাতীয়': 'বাংলাদেশ',
+        };
+        category = catMap[rawCat] || category;
+      }
+    }
+
+    // Extract date: <span id="datecaption1">Date :  DD-MM-YYYY </span>
+    let publishDate = new Date().toISOString();
+    const dateStr = extractById(html, 'datecaption1');
+    if (dateStr) {
+      const dateMatch = dateStr.match(/(\d{2})-(\d{2})-(\d{4})/);
+      if (dateMatch) {
+        const [, dd, mm, yyyy] = dateMatch;
+        publishDate = new Date(`${yyyy}-${mm}-${dd}`).toISOString();
+      }
+    }
+
+    // Extract image: first img with src containing admin/newspicture/
+    let imgUrl = 'https://picsum.photos/seed/manabadhikar/600/400';
+    const imgMatch = html.match(/<img[^>]*src=["']([^"']*admin\/newspicture\/[^"']+)["']/i);
+    if (imgMatch) {
+      let src = imgMatch[1];
+      if (!src.startsWith('http')) {
+        src = `https://manabadhikarkhabar.com/${src}`;
+      }
+      imgUrl = src;
+    }
+
+    // Extract content: <span class="hh_line">...</span>
+    let content = '';
+    const contentMatch = html.match(/class=["']hh_line["'][^>]*>([\s\S]*?)<\/span>/i);
+    if (contentMatch) {
+      // Strip HTML tags but keep paragraph breaks
+      content = contentMatch[1]
+        .replace(/<br\s*\/?>/gi, '\n')
+        .replace(/<\/p>/gi, '\n\n')
+        .replace(/<\/h[23456]>/gi, '\n\n')
+        .replace(/<[^>]*>/g, '')
+        .replace(/&nbsp;/gi, ' ')
+        .replace(/\u200B/g, '') // remove zero-width spaces
+        .replace(/\n{3,}/g, '\n\n')
+        .trim();
+    }
+
+    // If content is too short, try getting all paragraphs from #con
+    if (content.length < 50) {
+      const conMatch = html.match(/id=["']con["'][^>]*>([\s\S]*)/i);
+      if (conMatch) {
+        const paragraphs: string[] = [];
+        const pRegex = /<(?:p|h[23456])[^>]*>([\s\S]*?)<\/(?:p|h[23456])>/gi;
+        let pMatch;
+        while ((pMatch = pRegex.exec(conMatch[1])) !== null) {
+          const txt = pMatch[1].replace(/<[^>]*>/g, '').replace(/&nbsp;/gi, ' ').replace(/\u200B/g, '').trim();
+          if (txt.length > 20) paragraphs.push(txt);
+        }
+        if (paragraphs.length > 0) content = paragraphs.join('\n\n');
+      }
+    }
+
+    // If still empty, use fallback
+    if (!content || content.length < 20) {
+      content = await generateBackupContent(title, category);
+    }
+
+    return { title, content, category, imgUrl, publishDate };
+  } catch (err) {
+    console.error(`[Manabadhikar] Failed to parse article ${articleId}:`, err);
+    return null;
+  }
+}
+
+/**
+ * Scrape ALL news from manabadhikarkhabar.com and save to MongoDB via ArticleModel
+ */
+export async function scrapeManabadhikarNews(): Promise<{ success: boolean; count: number; message: string }> {
+  if (manabadhikarScrapeStatus.isRunning) {
+    return { success: false, count: 0, message: 'মানবাধিকার খবর স্ক্র্যাপিং চলমান আছে।' };
+  }
+
+  manabadhikarScrapeStatus.isRunning = true;
+  manabadhikarScrapeStatus.message = 'মানবাধিকার খবর স্ক্র্যাপ হচ্ছে...';
+
+  try {
+    console.log('[Manabadhikar] Starting scrape from manabadhikarkhabar.com...');
+
+    // Step 1: Fetch homepage and extract all article IDs
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 15000);
+    const res = await fetch('https://manabadhikarkhabar.com/index2.php', { signal: controller.signal });
+    clearTimeout(timer);
+
+    if (!res.ok) throw new Error(`Failed to fetch homepage: ${res.status}`);
+    const html = await res.text();
+
+    // Extract unique article IDs from details.php?id=XXXX links
+    const idRegex = /details\.php\?id=(\d+)/g;
+    const articleIds = new Set<string>();
+    let match;
+    while ((match = idRegex.exec(html)) !== null) {
+      articleIds.add(match[1]);
+    }
+
+    if (articleIds.size === 0) {
+      throw new Error('No article IDs found on homepage.');
+    }
+
+    console.log(`[Manabadhikar] Found ${articleIds.size} unique article IDs.`);
+
+    // Step 2: Connect to MongoDB
+    let useMongoose = false;
+    try {
+      await dbConnect();
+      useMongoose = true;
+    } catch (err) {
+      console.warn('[Manabadhikar] Mongoose connection failed. Using memory fallback.', err);
+    }
+
+    // Step 3: Process each article
+    let savedCount = 0;
+    let skippedCount = 0;
+
+    for (const articleId of articleIds) {
+      // Check duplicate by a quick title-less approach: check if we already scraped this source ID
+      // We'll use the imgUrl or title for dedup after fetching
+
+      const articleData = await parseManabadhikarArticle(articleId);
+      if (!articleData) continue;
+
+      // Check for duplicates by title
+      let exists = false;
+      if (useMongoose) {
+        exists = (await ArticleModel.countDocuments({ title: articleData.title })) > 0;
+      } else {
+        exists = memoryArticles.some(a => a.title === articleData.title);
+      }
+
+      if (exists) {
+        skippedCount++;
+        continue;
+      }
+
+      console.log(`[Manabadhikar] Saving: "${articleData.title.substring(0, 60)}..."`);
+
+      const doc = {
+        title: articleData.title,
+        content: articleData.content,
+        category: articleData.category,
+        imgUrl: articleData.imgUrl,
+        time: formatBengaliTime(new Date(articleData.publishDate).getTime()),
+        author: 'মানবাধিকার খবর',
+        isLead: false,
+        isSub: true,
+        isPublished: true,
+        publishDate: articleData.publishDate
+      };
+
+      if (useMongoose) {
+        try {
+          const article = new ArticleModel(doc);
+          await article.save();
+          savedCount++;
+        } catch (saveErr: any) {
+          console.error(`[Manabadhikar] Save failed for "${articleData.title.substring(0, 40)}":`, saveErr.message);
+        }
+      } else {
+        memoryArticles.unshift({
+          ...doc,
+          _id: `manabadhikar-${Date.now()}-${Math.floor(Math.random() * 10000)}`
+        } as any);
+        savedCount++;
+      }
+    }
+
+    console.log(`[Manabadhikar] Complete! Saved: ${savedCount}, Skipped: ${skippedCount}, Total IDs: ${articleIds.size}`);
+
+    manabadhikarScrapeStatus.lastRun = Date.now();
+    manabadhikarScrapeStatus.isRunning = false;
+    manabadhikarScrapeStatus.count = savedCount;
+    manabadhikarScrapeStatus.message = `মানবাধিকার খবর থেকে ${savedCount}টি নতুন খবর সেভ হয়েছে। ${skippedCount}টি ডুপ্লিকেট বাদ।`;
+
+    return { success: true, count: savedCount, message: manabadhikarScrapeStatus.message };
+
+  } catch (error: any) {
+    console.error('[Manabadhikar] Scraper error:', error);
+    manabadhikarScrapeStatus.isRunning = false;
+    manabadhikarScrapeStatus.message = `ত্রুটি: ${error.message || error}`;
+    return { success: false, count: 0, message: manabadhikarScrapeStatus.message };
   }
 }

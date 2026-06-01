@@ -2,17 +2,27 @@ import { NextRequest, NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
 import { cookies } from 'next/headers';
 import { verifyToken } from '@/lib/auth-store';
-import { scrapeLatestNews, lastScrapeStatus } from '@/lib/scraper';
+import { scrapeLatestNews, lastScrapeStatus, scrapeManabadhikarNews, manabadhikarScrapeStatus } from '@/lib/scraper';
 import { getArticlesQuery, createArticleQuery } from '@/queries/article';
 
 export async function GET(req: NextRequest) {
   try {
-    // Autotrigger news scraper if 30 minutes elapsed (non-blocking)
+    // Autotrigger news scrapers if 30 minutes elapsed (non-blocking)
     const THIRTY_MIN_MS = 30 * 60 * 1000;
+    
+    // 1. Prothom Alo scraper
     if (Date.now() - lastScrapeStatus.lastRun > THIRTY_MIN_MS && !lastScrapeStatus.isRunning) {
-      console.log('30-minute news crawl interval reached. Booting latest background scraper...');
+      console.log('30-minute news crawl interval reached. Booting Prothom Alo background scraper...');
       scrapeLatestNews().catch(err => {
-        console.error('Automated background news scraping failed:', err);
+        console.error('Prothom Alo background news scraping failed:', err);
+      });
+    }
+    
+    // 2. Manabadhikar Khabar scraper
+    if (Date.now() - manabadhikarScrapeStatus.lastRun > THIRTY_MIN_MS && !manabadhikarScrapeStatus.isRunning) {
+      console.log('30-minute news crawl interval reached. Booting Manabadhikar Khabar background scraper...');
+      scrapeManabadhikarNews().catch(err => {
+        console.error('Manabadhikar background news scraping failed:', err);
       });
     }
 
