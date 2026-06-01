@@ -2,6 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { 
   Search, Menu, Facebook, Twitter, Youtube, Calendar, PenTool, ChevronRight, X
@@ -118,11 +119,14 @@ function PublicHeaderAndNav() {
                 }}
                 className="cursor-pointer block"
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img 
+                <Image 
                   src="/logo.png" 
                   alt="মানবাধিকার খবর" 
+                  width={280}
+                  height={56}
                   className="h-8 w-auto object-contain block"
+                  style={{ imageRendering: '-webkit-optimize-contrast' }}
+                  priority
                 />
               </Link>
               <button 
