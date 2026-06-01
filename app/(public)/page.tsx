@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { 
   Search, Menu, User, ChevronRight, 
@@ -63,7 +63,7 @@ function formatScraperLastRunBengali(lastRunMs: number): string {
   }
 }
 
-export default function Page() {
+function PageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const selectedCategory = searchParams.get('category') || 'all';
@@ -1184,5 +1184,18 @@ export default function Page() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function Page() {
+  return (
+    <Suspense fallback={
+      <div className="flex flex-col items-center justify-center py-20 gap-4 text-gray-500">
+        <div className="w-12 h-12 border-4 border-red-600 border-t-transparent rounded-full animate-spin"></div>
+        <p className="font-bangla font-semibold text-lg text-gray-700">লোড হচ্ছে...</p>
+      </div>
+    }>
+      <PageContent />
+    </Suspense>
   );
 }
