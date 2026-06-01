@@ -489,7 +489,7 @@ export default function Page() {
       </div>
 
       {/* Main Content Area */}
-      <main className="max-w-7xl mx-auto px-4 py-6 w-full flex-1">
+      <main className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-6 w-full flex-1">
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20 gap-4 text-gray-500">
             <div className="w-12 h-12 border-4 border-red-600 border-t-transparent rounded-full animate-spin"></div>
@@ -505,14 +505,14 @@ export default function Page() {
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8 hover:no-underline">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 md:gap-8 hover:no-underline">
             
             {/* Left/Main Column (9 Cols on large) */}
             <div className="lg:col-span-9">
               
               {/* Lead Story Section */}
               {leadNews && (
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-6 border-b border-gray-300 pb-6 mb-6">
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-4 sm:gap-6 border-b border-gray-300 pb-4 sm:pb-6 mb-4 sm:mb-6">
                   
                   {/* Main Headline */}
                   <div 
@@ -531,16 +531,16 @@ export default function Page() {
                           {leadNews.category}
                         </span>
                      </div>
-                     <h2 className="text-3xl sm:text-[40px] leading-[1.2] font-[900] text-gray-900 group-hover:text-red-700 transition-colors mb-4" style={{ fontFamily: 'var(--font-serif-bangla), Georgia, serif' }}>
+                     <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-[40px] leading-[1.25] font-[900] text-gray-900 group-hover:text-red-700 transition-colors mb-3 sm:mb-4" style={{ fontFamily: 'var(--font-serif-bangla), Georgia, serif' }}>
                        {leadNews.title}
                      </h2>
-                     <p className="text-gray-700 text-[17px] leading-[1.6]">
+                     <p className="text-gray-700 text-sm sm:text-[15px] md:text-[17px] leading-[1.6] line-clamp-3 sm:line-clamp-none">
                        {leadNews.content}
                      </p>
                      
                      {/* Clean printed/metadata bar */}
-                     <div className="flex justify-between items-center bg-gray-55/60 border border-gray-150 py-1.5 px-3 rounded-lg mt-4 no-print sm:flex-row flex-col gap-2">
-                       <div className="flex gap-4 text-gray-500 font-medium text-[13px] items-center">
+                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-gray-55/60 border border-gray-150 py-2 px-3 rounded-lg mt-3 sm:mt-4 no-print gap-1.5 sm:gap-2">
+                       <div className="flex flex-wrap gap-2 sm:gap-4 text-gray-500 font-medium text-[11px] sm:text-[13px] items-center">
                          <span>লেখক: <strong className="text-gray-700">{leadNews.author}</strong></span>
                          <span>•</span>
                          <span>{leadNews.time}</span>
@@ -602,7 +602,7 @@ export default function Page() {
               )}
  
               {/* Bottom Grid for Secondary Stories */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 pb-6 animate-fade-in">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 pb-4 sm:pb-6 animate-fade-in">
                 {secondaryStories.map(story => (
                   <div 
                     key={story._id} 
@@ -615,10 +615,10 @@ export default function Page() {
                          {story.category}
                        </span>
                      </div>
-                     <h3 className="text-[19px] font-bold text-gray-900 group-hover:text-blue-700 leading-snug transition-colors mb-2" style={{ fontFamily: 'var(--font-serif-bangla)' }}>
+                     <h3 className="text-base sm:text-[19px] font-bold text-gray-900 group-hover:text-blue-700 leading-snug transition-colors mb-1.5 sm:mb-2" style={{ fontFamily: 'var(--font-serif-bangla)' }}>
                         {story.title}
                      </h3>
-                     <p className="text-gray-650 text-[14px] line-clamp-3 leading-relaxed mb-4">
+                     <p className="text-gray-650 text-[13px] sm:text-[14px] line-clamp-2 sm:line-clamp-3 leading-relaxed mb-3 sm:mb-4">
                        {story.content}
                      </p>
                      
@@ -638,8 +638,8 @@ export default function Page() {
  
             </div>
  
-            {/* Right Sidebar (3 Cols) */}
-            <aside className="lg:col-span-3">
+            {/* Right Sidebar (3 Cols) — separated visually on mobile */}
+            <aside className="lg:col-span-3 border-t lg:border-t-0 border-gray-200 pt-4 lg:pt-0 mt-2 lg:mt-0">
 
 
               {/* Latest & Popular Tabs Block */}
@@ -792,22 +792,22 @@ export default function Page() {
         )}
         
         {/* Photo Gallery Section */}
-        <div className="mt-8 pt-8 border-t-[3px] border-black pb-8">
-           <div className="flex justify-between items-end mb-6">
-             <h2 className="text-3xl font-[900] text-gray-900 border-l-8 border-red-700 pl-3 leading-none" style={{ fontFamily: 'var(--font-serif-bangla)' }}>
+        <div className="mt-6 sm:mt-8 pt-6 sm:pt-8 border-t-[3px] border-black pb-6 sm:pb-8">
+           <div className="flex justify-between items-end mb-4 sm:mb-6">
+             <h2 className="text-xl sm:text-2xl md:text-3xl font-[900] text-gray-900 border-l-4 sm:border-l-8 border-red-700 pl-2 sm:pl-3 leading-none" style={{ fontFamily: 'var(--font-serif-bangla)' }}>
                ছবিতে সংবাদ
              </h2>
              <span className="text-gray-400 font-medium text-sm">লাইভ গ্যালারি</span>
            </div>
            
-           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
               {filteredArticles.slice(0, 4).map((art, i) => (
                 <div key={'gal-'+art._id} onClick={() => setSelectedArticle(art)} className="group cursor-pointer">
                   <div className="relative aspect-[4/3] rounded overflow-hidden mb-3 bg-gray-100 border border-gray-200">
                     <LazyImage src={art.imgUrl} alt="Gallery" fill className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-700" referrerPolicy="no-referrer" />
                     <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors z-20"></div>
                   </div>
-                  <h4 className="text-[16px] font-bold text-gray-900 leading-snug group-hover:text-red-700 transition-colors line-clamp-2" style={{ fontFamily: 'var(--font-serif-bangla)' }}>
+                  <h4 className="text-[13px] sm:text-[16px] font-bold text-gray-900 leading-snug group-hover:text-red-700 transition-colors line-clamp-2" style={{ fontFamily: 'var(--font-serif-bangla)' }}>
                     {art.title}
                   </h4>
                 </div>
@@ -884,7 +884,7 @@ export default function Page() {
           onClick={() => setSelectedArticle(null)}
         >
           <div 
-            className={`relative rounded-xl shadow-2xl border transition-colors duration-300 max-w-3xl w-full max-h-[90vh] overflow-y-auto font-sans flex flex-col ${
+            className={`relative rounded-xl shadow-2xl border transition-colors duration-300 max-w-3xl w-full max-h-[92vh] overflow-y-auto font-sans flex flex-col ${
               isNightMode 
                 ? 'bg-slate-900 border-slate-800 text-slate-100' 
                 : 'bg-white border-gray-200 text-gray-800'
@@ -904,7 +904,7 @@ export default function Page() {
             }}
           >
             {/* Modal Header Actions */}
-            <div className={`relative flex flex-wrap items-center justify-between border-b px-6 py-4 sticky top-0 backdrop-blur-md z-10 transition-colors duration-300 ${
+            <div className={`relative flex flex-wrap items-center justify-between border-b px-4 sm:px-6 py-3 sm:py-4 sticky top-0 backdrop-blur-md z-10 transition-colors duration-300 gap-2 ${
               isNightMode ? 'bg-slate-900/95 border-slate-800' : 'bg-white/95 border-gray-200'
             }`}>
               {/* Visual Reading Progress Bar */}
@@ -1032,9 +1032,9 @@ export default function Page() {
             )}
 
             {/* Read Content Area */}
-            <div className="p-6 md:p-8 space-y-6 flex-1 text-left">
+            <div className="p-4 sm:p-6 md:p-8 space-y-4 sm:space-y-6 flex-1 text-left">
               <h1 
-                className={`text-2xl md:text-[34px] font-[900] leading-tight tracking-tight transition-colors duration-300 ${
+                className={`text-xl sm:text-2xl md:text-[34px] font-[900] leading-tight tracking-tight transition-colors duration-300 ${
                   isNightMode ? 'text-white' : 'text-gray-900'
                 }`}
                 style={{ fontFamily: 'var(--font-serif-bangla), Georgia, serif' }}

@@ -6,10 +6,10 @@ import { Facebook, Twitter, Youtube, MapPin, Mail, Phone, Smartphone } from 'luc
 export default function Footer() {
   return (
     <footer className="bg-[#111113] text-white">
-      <div className="max-w-7xl mx-auto px-4 py-12 md:py-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8 border-b border-white/10">
+      <div className="max-w-7xl mx-auto px-4 py-8 sm:py-12 md:py-16 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-10 lg:gap-8 border-b border-white/10">
         {/* Brand */}
         <div>
-          <div className="text-3xl md:text-4xl font-[900] text-white tracking-tight mb-5" style={{ fontFamily: 'var(--font-serif-bangla), Georgia, serif' }}>
+          <div className="text-2xl sm:text-3xl md:text-4xl font-[900] text-white tracking-tight mb-4 sm:mb-5" style={{ fontFamily: 'var(--font-serif-bangla), Georgia, serif' }}>
             মানবাধিকার খবর
           </div>
           <p className="text-gray-400 text-[14px] leading-relaxed mb-6 font-medium">
@@ -55,7 +55,7 @@ export default function Footer() {
       </div>
 
       {/* Bottom Bar */}
-      <div className="max-w-7xl mx-auto px-4 py-5 flex flex-col md:flex-row justify-between items-center gap-3 text-xs text-gray-500">
+      <div className="max-w-7xl mx-auto px-4 py-4 sm:py-5 flex flex-col sm:flex-row justify-between items-center gap-2 sm:gap-3 text-xs text-gray-500 safe-bottom">
         <p>© ২০২৬ মানবাধিকার খবর। সর্বস্বত্ব সংরক্ষিত।</p>
         <div className="flex gap-4 font-medium">
           <Link href="/archive" className="hover:text-white transition-colors">আর্কাইভ</Link>

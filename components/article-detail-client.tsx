@@ -101,12 +101,12 @@ export function ArticleDetailClient({ article, sourceLabel, authorData }: Articl
       </div>
 
       {/* Article Detail Body layout */}
-      <main className="max-w-7xl mx-auto px-4 py-8 w-full flex-1">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <main className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-8 w-full flex-1">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 lg:gap-8">
           
           {/* Left Column (9 Cols) */}
           <div className="lg:col-span-9">
-            <article className="bg-white rounded-2xl border border-gray-250/70 p-6 md:p-10 shadow-sm space-y-6">
+            <article className="bg-white rounded-2xl border border-gray-250/70 p-4 sm:p-6 md:p-10 shadow-sm space-y-4 sm:space-y-6">
           
           {/* Category Pill and Print */}
           <div className="flex justify-between items-center pb-4 border-b border-gray-150 no-print">
@@ -129,7 +129,7 @@ export function ArticleDetailClient({ article, sourceLabel, authorData }: Articl
 
           {/* Heading */}
           <h1 
-            className="text-2xl md:text-4xl font-[900] text-gray-900 leading-tight tracking-tight pt-2"
+            className="text-xl sm:text-2xl md:text-4xl font-[900] text-gray-900 leading-tight tracking-tight pt-2"
             style={{ fontFamily: 'var(--font-serif-bangla), Georgia, serif' }}
           >
             {article.title}
@@ -171,7 +171,7 @@ export function ArticleDetailClient({ article, sourceLabel, authorData }: Articl
 
           {/* Content Body with gorgeous Bangla formatting */}
           <p 
-            className="text-[17px] sm:text-[18px] leading-[1.8] text-gray-850 whitespace-pre-line font-medium text-justify font-bangla pt-4"
+            className="text-[15px] sm:text-[17px] md:text-[18px] leading-[1.7] sm:leading-[1.8] text-gray-850 whitespace-pre-line font-medium text-justify font-bangla pt-4"
           >
             {article.content}
           </p>
@@ -258,7 +258,7 @@ export function ArticleDetailClient({ article, sourceLabel, authorData }: Articl
       </div>
 
       {/* Right Sidebar Column (3 Cols) */}
-      <aside className="lg:col-span-3 space-y-6 no-print animate-fade-in">
+      <aside className="lg:col-span-3 space-y-4 sm:space-y-6 no-print animate-fade-in border-t lg:border-t-0 border-gray-200 pt-4 lg:pt-0 mt-2 lg:mt-0">
         <AdBanner position="sidebar" className="w-full" />
         <AdBanner position="in_article" className="w-full" />
         
