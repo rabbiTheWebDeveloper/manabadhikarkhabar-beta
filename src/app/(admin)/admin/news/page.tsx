@@ -18,6 +18,7 @@ interface Article {
   author: string;
   isLead: boolean;
   isSub: boolean;
+  isPublished?: boolean;
   publishDate?: string;
 }
 
@@ -41,6 +42,7 @@ export default function NewsManagementPage() {
   const [author, setAuthor] = useState('নিজস্ব প্রতিবেদক');
   const [isLead, setIsLead] = useState(false);
   const [isSub, setIsSub] = useState(false);
+  const [isPublished, setIsPublished] = useState(true);
   const [publishDate, setPublishDate] = useState('');
   const [isUploading, setIsUploading] = useState(false);
   const [uploadNote, setUploadNote] = useState('');
@@ -123,6 +125,7 @@ export default function NewsManagementPage() {
     setAuthor('নিজস্ব প্রতিবেদক');
     setIsLead(false);
     setIsSub(false);
+    setIsPublished(true);
     setPublishDate('');
     setShowForm(false);
     setIsUploading(false);
@@ -138,6 +141,7 @@ export default function NewsManagementPage() {
     setAuthor(art.author);
     setIsLead(!!art.isLead);
     setIsSub(!!art.isSub);
+    setIsPublished(art.isPublished !== false);
     if (art.publishDate) {
       try {
         const d = new Date(art.publishDate);
@@ -159,7 +163,7 @@ export default function NewsManagementPage() {
     const payload = {
       title, content, category,
       imgUrl: imgUrl || `https://picsum.photos/seed/news-${staticSeedSuffix}/600/400`,
-      author, isLead, isSub,
+      author, isLead, isSub, isPublished,
       publishDate: publishDate ? new Date(publishDate).toISOString() : new Date().toISOString()
     };
     try {
@@ -186,8 +190,13 @@ export default function NewsManagementPage() {
       const res = await fetch(`/api/articles/${id}`, { method: 'DELETE' });
       if (res.ok) {
         showAdminNotif('সংবাদটি ডিলিট করা হয়েছে', 'success');
-        loadArticles();
         if (editingId === id) resetForm();
+        setSelectedIds(prev => {
+          const next = new Set(prev);
+          next.delete(id);
+          return next;
+        });
+        loadArticles();
       } else { showAdminNotif('ডিলিট ব্যর্থ', 'error'); }
     } catch { showAdminNotif('ডিলিট করতে ত্রুটি', 'error'); }
   };
@@ -195,12 +204,28 @@ export default function NewsManagementPage() {
   const handleBulkDelete = async () => {
     if (selectedIds.size === 0) return;
     if (!confirm(`আপনি কি ${selectedIds.size}টি সংবাদ ডিলিট করতে চান?`)) return;
-    for (const id of selectedIds) {
-      try {
-        await fetch(`/api/articles/${id}`, { method: 'DELETE' });
-      } catch { /* continue */ }
+    
+    let deletedCount = 0;
+    try {
+      const promises = Array.from(selectedIds).map(id => 
+        fetch(`/api/articles/${id}`, { method: 'DELETE' })
+      );
+      const results = await Promise.all(promises);
+      
+      results.forEach(res => {
+        if (res.ok) deletedCount++;
+      });
+      
+      if (deletedCount > 0) {
+        showAdminNotif(`${deletedCount}টি সংবাদ ডিলিট করা হয়েছে`, 'success');
+        if (editingId && selectedIds.has(editingId)) resetForm();
+      } else {
+        showAdminNotif('ডিলিট ব্যর্থ', 'error');
+      }
+    } catch {
+      showAdminNotif('ডিলিট করতে ত্রুটি', 'error');
     }
-    showAdminNotif(`${selectedIds.size}টি সংবাদ ডিলিট করা হয়েছে`, 'success');
+    
     setSelectedIds(new Set());
     loadArticles();
   };
@@ -331,6 +356,14 @@ export default function NewsManagementPage() {
                 <input type="datetime-local" value={publishDate} onChange={e => setPublishDate(e.target.value)}
                   className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-400 text-sm font-sans" />
               </div>
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-1">স্ট্যাটাস (Status)</label>
+                <select value={isPublished ? 'published' : 'draft'} onChange={e => setIsPublished(e.target.value === 'published')}
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-400 cursor-pointer text-sm font-sans">
+                  <option value="published">প্রকাশিত (Published)</option>
+                  <option value="draft">খসড়া (Draft)</option>
+                </select>
+              </div>
               <div className="md:col-span-2">
                 <label className="block text-sm font-bold text-gray-700 mb-1">বিস্তারিত *</label>
                 <textarea rows={5} placeholder="সংবাদের বিস্তারিত লিখুন..." value={content} onChange={e => setContent(e.target.value)}
@@ -419,6 +452,7 @@ export default function NewsManagementPage() {
                     <th className="py-3 px-4">ক্যাটাগরি</th>
                     <th className="py-3 px-4">অবস্থান</th>
                     <th className="py-3 px-4">লেখক</th>
+                    <th className="py-3 px-4">স্ট্যাটাস</th>
                     <th className="py-3 px-4 text-right">অ্যাকশন</th>
                   </tr>
                 </thead>
@@ -455,6 +489,13 @@ export default function NewsManagementPage() {
                         {!art.isLead && !art.isSub && <span className="text-gray-300">—</span>}
                       </td>
                       <td className="py-3 px-4 text-gray-500 text-xs font-medium">{art.author}</td>
+                      <td className="py-3 px-4">
+                        {art.isPublished !== false ? (
+                          <span className="text-[11px] bg-emerald-50 text-emerald-600 px-2.5 py-1 rounded-md border border-emerald-200 font-bold tracking-wide">Published</span>
+                        ) : (
+                          <span className="text-[11px] bg-amber-50 text-amber-600 px-2.5 py-1 rounded-md border border-amber-200 font-bold tracking-wide">Draft</span>
+                        )}
+                      </td>
                       <td className="py-3 px-4 text-right">
                         <div className="flex gap-2 justify-end">
                           <a href={`/${generateSlug(art.title)}`} target="_blank" rel="noopener noreferrer"
