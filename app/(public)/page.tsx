@@ -18,6 +18,7 @@ import Link from 'next/link';
 import { Article } from '@/lib/types';
 import { trackPageView } from '@/lib/analytics';
 import { INITIAL_ARTICLES } from '@/lib/initial-data';
+import { generateSlug } from '@/lib/utils';
 
 const BENGALI_DIGITS = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
 
@@ -250,7 +251,7 @@ export default function Page() {
 
   const handleShare = async (e: React.MouseEvent, art: Article) => {
     e.stopPropagation();
-    const shareUrl = `${window.location.origin}/news/${art._id}`;
+    const shareUrl = `${window.location.origin}/${generateSlug(art.title)}`;
     
     if (typeof navigator !== 'undefined' && navigator.share) {
       try {
@@ -1285,7 +1286,7 @@ export default function Page() {
  
                 {/* SEO Dedicated Page URL Link */}
                 <Link 
-                  href={`/news/${selectedArticle._id}`}
+                  href={`/${generateSlug(selectedArticle.title)}`}
                   className={`flex items-center gap-1.5 border text-xs font-bold px-3 py-1.5 rounded transition-all cursor-pointer shadow-sm hover:shadow active:scale-95 duration-200 ${
                     isNightMode 
                       ? 'bg-slate-800 hover:bg-slate-700 border-slate-700 text-slate-200 hover:text-white font-sans' 

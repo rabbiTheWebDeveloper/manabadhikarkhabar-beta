@@ -19,6 +19,35 @@ export default function AdsManagementPage() {
   const [adLinkUrl, setAdLinkUrl] = useState('');
   const [adPosition, setAdPosition] = useState<'sidebar' | 'top_banner'>('sidebar');
   const [adIsActive, setAdIsActive] = useState(true);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadNote, setUploadNote] = useState('');
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      setIsUploading(true);
+      setUploadNote('আপলোড হচ্ছে...');
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('folder', 'ads');
+      const r = await fetch('/api/cloudinary/upload', { method: 'POST', body: fd });
+      if (r.ok) {
+        const d = await r.json();
+        setAdImgUrl(d.url);
+        setUploadNote('আপলোড সফল!');
+        showAdminNotif('বিজ্ঞাপন ব্যানার আপলোড হয়েছে', 'success');
+      } else {
+        showAdminNotif('আপলোড ব্যর্থ', 'error');
+        setUploadNote('আপলোড ব্যর্থ হয়েছে');
+      }
+    } catch {
+      showAdminNotif('সংযোগ ত্রুটি', 'error');
+      setUploadNote('সংযোগ ত্রুটি ঘটেছে');
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   const loadAds = async (showLoader = false) => {
     try {
@@ -42,6 +71,7 @@ export default function AdsManagementPage() {
     setAdPosition('sidebar');
     setAdIsActive(true);
     setShowForm(false);
+    setUploadNote('');
   };
 
   const startEdit = (ad: any) => {
@@ -146,9 +176,35 @@ export default function AdsManagementPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1">ব্যানার ইমেজ URL *</label>
-                <input type="url" placeholder="https://..." value={adImgUrl} onChange={e => setAdImgUrl(e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500/20 text-sm font-mono" required />
+                <label className="block text-sm font-bold text-gray-700 mb-1">ব্যানার ইমেজ *</label>
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <input 
+                      type="url" 
+                      placeholder="ইমেজ URL (https://...)" 
+                      value={adImgUrl} 
+                      onChange={e => setAdImgUrl(e.target.value)}
+                      className="flex-1 px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500/20 text-xs font-mono" 
+                      required 
+                    />
+                    <label className={`relative flex items-center justify-center gap-1.5 px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg border border-gray-200 text-xs font-bold transition-all shadow-xs cursor-pointer active:scale-95 shrink-0 ${isUploading ? 'opacity-50 pointer-events-none' : ''}`}>
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        onChange={handleFileChange} 
+                        className="hidden" 
+                      />
+                      <span>{isUploading ? 'আপলোড হচ্ছে...' : 'আপলোড ফাইল'}</span>
+                    </label>
+                  </div>
+                  {uploadNote && (
+                    <p className={`text-[11px] font-bold ${
+                      uploadNote.includes('সফল') ? 'text-emerald-600' : uploadNote.includes('হচ্ছে') ? 'text-blue-500 animate-pulse' : 'text-red-500'
+                    }`}>
+                      {uploadNote}
+                    </p>
+                  )}
+                </div>
               </div>
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-1">ক্লিক লিংক *</label>
@@ -159,9 +215,9 @@ export default function AdsManagementPage() {
             {adImgUrl && (
               <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg">
                 <p className="text-[10px] text-gray-400 font-bold mb-2">ব্যানার প্রিভিউ:</p>
-                <div className="w-full max-w-md aspect-[16/9] bg-gray-100 rounded-lg overflow-hidden border">
+                <div className="w-full max-w-md bg-gray-100 rounded-lg overflow-hidden border shadow-inner">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={adImgUrl} alt="Preview" className="w-full h-full object-cover" referrerPolicy="no-referrer"
+                  <img src={adImgUrl} alt="Preview" className="w-full h-auto block object-contain" referrerPolicy="no-referrer"
                     onError={(e) => { (e.target as any).src = 'https://placehold.co/600x400?text=Invalid+URL'; }} />
                 </div>
               </div>
@@ -200,10 +256,9 @@ export default function AdsManagementPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {ads.map((ad) => (
             <div key={ad._id} className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden hover:shadow-md transition-shadow group">
-              {/* Ad Image */}
-              <div className="relative aspect-[16/9] bg-gray-100 overflow-hidden">
+              <div className="relative bg-gray-100 overflow-hidden border-b border-gray-100 flex items-center justify-center min-h-[160px]">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={ad.imgUrl} alt={ad.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" referrerPolicy="no-referrer" />
+                <img src={ad.imgUrl} alt={ad.title} className="w-full h-auto max-h-[220px] object-contain group-hover:scale-[1.02] transition-transform duration-350" referrerPolicy="no-referrer" />
                 <div className="absolute top-3 right-3">
                   <button onClick={() => toggleActive(ad)} className="cursor-pointer" title="Toggle active">
                     {ad.isActive ? (

@@ -12,6 +12,7 @@ import { Article, Author } from '@/lib/types';
 import { trackPageView } from '@/lib/analytics';
 import { WeatherWidget } from '@/components/weather-widget';
 import { RelatedArticles } from '@/components/related-articles';
+import { generateSlug } from '@/lib/utils';
 
 const BENGALI_DIGITS = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
 
@@ -281,7 +282,7 @@ export function ArticleDetailClient({ article, sourceLabel, authorData }: Articl
               excludeId={article._id}
               onSelectArticle={(art) => {
                 if (typeof window !== 'undefined') {
-                  window.location.href = `/news/${art._id}`;
+                  window.location.href = `/${generateSlug(art.title)}`;
                 }
               }}
             />

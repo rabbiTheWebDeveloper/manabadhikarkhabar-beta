@@ -42,14 +42,14 @@ export default function AdBanner({ position, className = '', aspectRatio = 'aspe
           href={ad.linkUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className={`block ${aspectRatio} relative overflow-hidden border border-gray-200 group cursor-pointer rounded-lg`}
+          className="block w-full h-auto relative overflow-hidden border border-gray-200 group cursor-pointer rounded-lg bg-gray-50 shadow-xs"
           title={ad.title}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={ad.imgUrl}
             alt={ad.title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            className="w-full h-auto block group-hover:scale-[1.02] transition-transform duration-500 object-contain"
             referrerPolicy="no-referrer"
           />
           <div className="absolute top-1.5 left-1.5 bg-black/50 text-[8px] uppercase tracking-wider text-white px-1.5 py-0.5 rounded font-bold z-10 select-none">
