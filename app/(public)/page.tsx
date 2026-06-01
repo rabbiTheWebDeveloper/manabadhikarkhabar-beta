@@ -331,7 +331,7 @@ function PageContent() {
 
   const fetchAds = async () => {
     try {
-      const res = await fetch('/api/ads');
+      const res = await fetch('/api/ads', { cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
         setAds(data.ads || []);
@@ -346,7 +346,7 @@ function PageContent() {
       if (shouldSetLoading) {
         setLoading(true);
       }
-      const res = await fetch('/api/articles');
+      const res = await fetch('/api/articles', { cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
         setArticles(data.articles || []);
@@ -800,7 +800,7 @@ function PageContent() {
              <span className="text-gray-400 font-medium text-sm">লাইভ গ্যালারি</span>
            </div>
            
-           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
+           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-4 md:gap-6">
               {filteredArticles.slice(0, 4).map((art, i) => (
                 <div key={'gal-'+art._id} onClick={() => setSelectedArticle(art)} className="group cursor-pointer">
                   <div className="relative aspect-[4/3] rounded overflow-hidden mb-3 bg-gray-100 border border-gray-200">

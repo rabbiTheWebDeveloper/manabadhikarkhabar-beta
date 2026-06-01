@@ -31,6 +31,7 @@ function PublicHeaderAndNav() {
   const currentCategory = searchParams.get('category') || 'all';
   const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [categories, setCategories] = useState<{ value: string; label: string }[]>(STATIC_FALLBACK_CATEGORIES);
 
   // Sync state if search parameter changes externally
@@ -41,13 +42,13 @@ function PublicHeaderAndNav() {
   // Dynamically load categories from API
   useEffect(() => {
     let active = true;
-    fetch('/api/categories')
+    fetch('/api/categories', { cache: 'no-store' })
       .then(res => res.json())
       .then(data => {
         if (data.success && data.categories && active) {
           const formatted = data.categories.map((c: any) => ({
-            value: c.value,
-            label: c.label
+            value: c.value || c.name || '',
+            label: c.label || c.name || ''
           }));
           const hasAll = formatted.some((c: any) => c.value === 'all');
           if (!hasAll) {
@@ -242,7 +243,13 @@ function PublicHeaderAndNav() {
                 মানবাধিকার উন্নয়ন ও বস্তুনিষ্ঠ সাংবাদিকতায় প্রতিশ্রুতিবদ্ধ
               </span>
             </div>
-            <div className="md:hidden text-gray-800 w-6 h-6" /> {/* Spacer */}
+            <button
+              onClick={() => setMobileSearchOpen(!mobileSearchOpen)}
+              className="md:hidden text-gray-800 hover:text-red-700 transition-colors p-1 cursor-pointer"
+              aria-label="অনুসন্ধান করুন"
+            >
+              <Search className="w-6 h-6" />
+            </button>
           </div>
           
           {/* Top Header advertisement banner - matches uploaded style exactly */}
@@ -250,6 +257,29 @@ function PublicHeaderAndNav() {
             <AdBanner position="below_header" className="w-full" aspectRatio="aspect-[5.5/1]" />
           </div>
         </div>
+        {/* Mobile Search Container */}
+        {mobileSearchOpen && (
+          <div className="w-full px-4 pb-3 md:hidden animate-fade-in bg-white border-t border-gray-100">
+            <form 
+              onSubmit={(e) => { 
+                handleSearchSubmit(e); 
+                setMobileSearchOpen(false); 
+              }} 
+              className="relative w-full"
+            >
+              <input 
+                type="text" 
+                placeholder="খবরের কীওয়ার্ড লিখে খুঁজুন..." 
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full border border-gray-300 rounded-full py-2 pl-4 pr-10 focus:outline-none focus:border-[#BC1E2D] focus:ring-1 focus:ring-[#BC1E2D] transition-all font-bangla text-xs shadow-xs"
+              />
+              <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-650 cursor-pointer" aria-label="অনুসন্ধান">
+                <Search className="w-4 h-4" />
+              </button>
+            </form>
+          </div>
+        )}
       </header>
 
       {/* Navigation & Sticky Category Filter */}
