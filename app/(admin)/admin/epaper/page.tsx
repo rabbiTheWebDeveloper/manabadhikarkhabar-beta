@@ -22,6 +22,16 @@ export default function EPaperManagementPage() {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadNote, setUploadNote] = useState('');
 
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredCollections = collections.filter(col => {
+    if (!searchQuery) return true;
+    return (
+      (col.monthName && col.monthName.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (col._id && col._id.includes(searchQuery))
+    );
+  });
+
   const loadEpapers = async (showLoader = false) => {
     try { if (showLoader) setLoading(true); const r = await fetch('/api/epaper'); if (r.ok) { const d = await r.json(); setCollections(d.collections || []); } }
     catch { showAdminNotif('ই-পেপার লোড ত্রুটি', 'error'); } finally { setLoading(false); }
@@ -29,12 +39,32 @@ export default function EPaperManagementPage() {
 
   useEffect(() => { loadEpapers(true); }, []);
 
-  const handleMonthChange = (val: string) => {
+  const toBengaliNumber = (num: number | string): string => {
+    return num
+      .toString()
+      .split('')
+      .map(char => {
+        const idx = parseInt(char, 10);
+        return isNaN(idx) ? char : ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'][idx];
+      })
+      .join('');
+  };
+
+  const handleDateChange = (val: string) => {
     if (!val) return;
     setEpId(val);
-    const [y, m] = val.split('-').map(Number);
-    setEpYear(y); setEpMonth(m);
-    if (m >= 1 && m <= 12) setEpMonthName(`${BANGLA_MONTHS[m - 1]} ${y}`);
+    const parts = val.split('-');
+    const y = Number(parts[0]);
+    const m = Number(parts[1]);
+    const d = parts[2] ? Number(parts[2]) : 1;
+    setEpYear(y); 
+    setEpMonth(m);
+    if (m >= 1 && m <= 12) {
+      const formatted = parts[2] 
+        ? `${toBengaliNumber(d)} ${BANGLA_MONTHS[m - 1]} ${toBengaliNumber(y)}`
+        : `${BANGLA_MONTHS[m - 1]} ${toBengaliNumber(y)}`;
+      setEpMonthName(formatted);
+    }
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -106,12 +136,12 @@ export default function EPaperManagementPage() {
           <form onSubmit={saveCollection} className="space-y-5">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1 flex items-center gap-1"><Calendar className="w-4 h-4 text-red-500" /><span>মাস *</span></label>
-                <input type="month" value={epId} onChange={e => handleMonthChange(e.target.value)} className="w-full px-3 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-400 text-sm font-sans" required />
+                <label className="block text-sm font-bold text-gray-700 mb-1 flex items-center gap-1"><Calendar className="w-4 h-4 text-red-500" /><span>তারিখ *</span></label>
+                <input type="date" value={epId} onChange={e => handleDateChange(e.target.value)} className="w-full px-3 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-400 text-sm font-sans" required />
               </div>
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-1">নাম *</label>
-                <input type="text" placeholder="জুন ২০২৬" value={epMonthName} onChange={e => setEpMonthName(e.target.value)} className="w-full px-3 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500/20" required />
+                <input type="text" placeholder="১ জুন ২০২৬" value={epMonthName} onChange={e => setEpMonthName(e.target.value)} className="w-full px-3 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500/20" required />
               </div>
             </div>
 
@@ -201,16 +231,25 @@ export default function EPaperManagementPage() {
 
           {/* Published Collections */}
           <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-            <div className="p-5 border-b border-gray-150 bg-gray-50/50 flex justify-between items-center">
-              <h3 className="font-extrabold text-base text-gray-900">প্রকাশিত সংস্করণ ({collections.length})</h3>
+            <div className="p-5 border-b border-gray-150 bg-gray-50/50 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <h3 className="font-extrabold text-base text-gray-900">প্রকাশিত সংস্করণ ({filteredCollections.length})</h3>
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="খুঁজুন..."
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  className="px-3 py-1.5 border border-gray-200 rounded-lg text-xs w-full sm:w-48 focus:outline-none focus:ring-2 focus:ring-red-500/20"
+                />
+              </div>
             </div>
             {loading ? (
               <div className="p-12 text-center"><Loader2 className="w-7 h-7 text-red-600 animate-spin mx-auto" /></div>
-            ) : collections.length === 0 ? (
-              <div className="p-12 text-center text-gray-400"><BookOpen className="w-12 h-12 text-gray-200 mx-auto mb-3" /><p className="font-bold">কোনো সংস্করণ নেই</p></div>
+            ) : filteredCollections.length === 0 ? (
+              <div className="p-12 text-center text-gray-400"><BookOpen className="w-12 h-12 text-gray-200 mx-auto mb-3" /><p className="font-bold">কোনো সংস্করণ পাওয়া যায়নি</p></div>
             ) : (
               <div className="divide-y divide-gray-150">
-                {collections.map(col => (
+                {filteredCollections.map(col => (
                   <div key={col._id} className="p-5 hover:bg-gray-50/40 transition-colors">
                     <div className="flex justify-between items-start gap-4">
                       <div>

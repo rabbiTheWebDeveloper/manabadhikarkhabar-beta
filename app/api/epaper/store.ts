@@ -2,8 +2,8 @@ import { EPaperCollection } from '@/lib/types';
 
 export let memoryEPapers: EPaperCollection[] = [
   {
-    _id: "2026-06",
-    monthName: "জুন ২০২৬",
+    _id: "2026-06-01",
+    monthName: "১ জুন ২০২৬",
     year: 2026,
     month: 6,
     pages: [
@@ -19,24 +19,24 @@ export let memoryEPapers: EPaperCollection[] = [
     updatedAt: "2026-06-01T04:28:00Z"
   },
   {
-    _id: "2026-05",
-    monthName: "মে ২০২৬",
+    _id: "2026-05-24",
+    monthName: "২৪ মে ২০২৬",
     year: 2026,
     month: 5,
     pages: [
-      { pageNumber: 1, title: "প্রধান পাতা (মে সংখ্যা)", imgUrl: "https://images.unsplash.com/photo-1495020689067-958852a7765e?auto=format&fit=crop&q=80&w=1200" },
+      { pageNumber: 1, title: "প্রধান পাতা", imgUrl: "https://images.unsplash.com/photo-1495020689067-958852a7765e?auto=format&fit=crop&q=80&w=1200" },
       { pageNumber: 2, title: "সম্পাদকীয় মতামত (২য় পাতা)", imgUrl: "https://images.unsplash.com/photo-1457369804613-52c61a468e7d?auto=format&fit=crop&q=80&w=1200" },
       { pageNumber: 3, title: "জাতীয় ও বিশ্ব ঘটনা", imgUrl: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=1200" }
     ],
-    updatedAt: "2026-05-01T08:00:00Z"
+    updatedAt: "2026-05-24T08:00:00Z"
   }
 ];
 
 export function resetEPapers() {
   memoryEPapers = [
     {
-      _id: "2026-06",
-      monthName: "জুন ২০২৬",
+      _id: "2026-06-01",
+      monthName: "১ জুন ২০২৬",
       year: 2026,
       month: 6,
       pages: [

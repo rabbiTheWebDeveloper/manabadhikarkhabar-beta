@@ -29,6 +29,10 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { WeatherWidget } from '@/components/weather-widget';
 import { Article } from '@/lib/types';
+import Navbar from '@/components/public/Navbar';
+import Footer from '@/components/public/Footer';
+import AdBanner from '@/components/AdBanner';
+import BreakingTicker from '@/components/public/BreakingTicker';
 
 // E-paper pages (using High quality layouts)
 const PAGES = [
@@ -195,6 +199,17 @@ export default function EPaper() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  const handleCategoryChange = (cat: string) => {
+    router.push(`/?category=${encodeURIComponent(cat)}`);
+  };
+
+  const handleSearchChange = (val: string) => {
+    setSearchTerm(val);
+    if (val.trim()) {
+      router.push(`/?search=${encodeURIComponent(val.trim())}`);
+    }
+  };
+
   // Dynamic collections
   const [collections, setCollections] = useState<any[]>([]);
   const [collectionsLoading, setCollectionsLoading] = useState(true);
@@ -235,8 +250,15 @@ export default function EPaper() {
         }));
       }
     }
-    return PAGES;
+    return [];
   }, [collections, selectedCollectionIndex]);
+
+  // Safety guard to ensure currentPage is never out of bounds when collection shifts
+  useEffect(() => {
+    if (activePages && activePages.length > 0 && currentPage >= activePages.length) {
+      setCurrentPage(0);
+    }
+  }, [activePages, currentPage]);
 
   const nextPage = () => {
     if (currentPage < activePages.length - 1) setCurrentPage(currentPage + 1);
@@ -255,239 +277,80 @@ export default function EPaper() {
     }
   }, [currentPage]);
 
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchTerm.trim()) {
-      router.push(`/?search=${encodeURIComponent(searchTerm.trim())}`);
-    }
-  };
-
   // Current Date in Bengali
   const dateOptions: Intl.DateTimeFormatOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
   const today = new Intl.DateTimeFormat('bn-BD', dateOptions).format(new Date());
 
+  // Defensive bounds check for currentPage data to prevent runtime crashes
+  const activePage = activePages[currentPage] || activePages[0] || { id: 1, title: 'কোনো পাতা নেই', image: '' };
+
+  if (collectionsLoading) {
+    return (
+      <div className="min-h-screen flex flex-col font-bangla antialiased selection:bg-[#BC1E2D] selection:text-white transition-colors duration-200 bg-white text-[#1A1A1A]">
+        <Navbar 
+          selectedCategory="" 
+          onCategoryChange={handleCategoryChange} 
+          searchTerm={searchTerm} 
+          onSearchChange={handleSearchChange} 
+        />
+        <BreakingTicker />
+        <div className="flex-1 flex flex-col items-center justify-center py-20 px-4 bg-[#F6F4EE]">
+          <div className="flex flex-col items-center gap-4">
+            <div className="w-12 h-12 border-4 border-red-200 border-t-red-700 rounded-full animate-spin"></div>
+            <span className="text-sm font-bold text-gray-600 font-sans">ই-পেপার লোড হচ্ছে...</span>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (!collectionsLoading && collections.length === 0) {
+    return (
+      <div className="min-h-screen flex flex-col font-bangla antialiased selection:bg-[#BC1E2D] selection:text-white transition-colors duration-200 bg-white text-[#1A1A1A]">
+        <Navbar 
+          selectedCategory="" 
+          onCategoryChange={handleCategoryChange} 
+          searchTerm={searchTerm} 
+          onSearchChange={handleSearchChange} 
+        />
+        <BreakingTicker />
+        <div className="flex-1 flex flex-col items-center justify-center py-16 px-4 bg-[#F6F4EE]">
+          <div className="bg-white border border-[#E4DFD5] p-8 md:p-12 rounded-2xl max-w-md w-full text-center shadow-lg">
+            <div className="w-16 h-16 bg-red-50 text-red-750 rounded-full flex items-center justify-center mx-auto mb-5 shadow-sm">
+              <Calendar size={32} className="animate-pulse text-[#BC1E2D]" />
+            </div>
+            <h3 className="text-xl font-black text-gray-950 mb-2">কোনো সংস্করণ নেই</h3>
+            <p className="text-sm text-gray-500 font-sans leading-relaxed mb-6">
+              দুঃখিত, বর্তমানে ই-পেপার সংস্করণের কোনো আর্কাইভ বা আজকের সংস্করণ ডাটাবেজে প্রকাশিত হয়নি। অনুগ্রহ করে পরে আবার চেষ্টা করুন।
+            </p>
+            <Link href="/" className="inline-flex items-center gap-2 bg-[#BC1E2D] hover:bg-red-800 text-white font-bold py-2.5 px-6 rounded-lg text-sm transition-all shadow hover:shadow-md cursor-pointer">
+              প্রচ্ছদে ফিরে যান
+            </Link>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex flex-col font-bangla antialiased selection:bg-[#BC1E2D] selection:text-white transition-colors duration-200 bg-white text-[#1A1A1A]">
       
-      {/* Mobile Drawer Menu */}
-      {mobileMenuOpen && (
-        <div className="fixed inset-0 z-[100] flex md:hidden" role="dialog" aria-modal="true">
-          {/* Backdrop overlay */}
-          <div 
-            className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity duration-300" 
-            onClick={() => setMobileMenuOpen(false)}
-          />
-          
-          {/* Drawer container body */}
-          <div className="relative flex w-full max-w-[280px] flex-col bg-white p-5 shadow-2xl transition-all h-full animate-fade-in-left">
-            <div className="flex items-center justify-between border-b pb-4 mb-4 border-gray-200">
-              <Link 
-                href="/"
-                onClick={() => setMobileMenuOpen(false)}
-                className="text-2xl font-black text-red-700 tracking-tight cursor-pointer font-serif-bangla"
-                style={{ fontFamily: 'var(--font-serif-bangla), Georgia, serif' }}
-              >
-                মানবাধিকার খবর
-              </Link>
-              <button 
-                onClick={() => setMobileMenuOpen(false)}
-                className="rounded-full p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-950 focus:outline-none transition-colors"
-                aria-label="বন্ধ করুন"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
+      {/* Dynamic Modular Navbar */}
+      <Navbar 
+        selectedCategory="" 
+        onCategoryChange={handleCategoryChange} 
+        searchTerm={searchTerm} 
+        onSearchChange={handleSearchChange} 
+      />
 
-            {/* Quick action buttons inside sidebar */}
-            <div className="flex flex-col gap-2.5 mb-6">
-              <Link 
-                href="/submit-news" 
-                onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center justify-center gap-2 bg-red-700 text-white hover:bg-red-800 py-2.5 rounded-lg text-sm font-extrabold transition-all shadow-sm"
-              >
-                <PenTool className="w-4 h-4" />
-                <span>সংবাদ পাঠান</span>
-              </Link>
-              <Link 
-                href="/epaper" 
-                onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center justify-center gap-2 bg-amber-600 text-white hover:bg-amber-700 py-2.5 rounded-lg text-sm font-extrabold transition-all border border-amber-500 shadow-sm"
-              >
-                <Compass className="w-4 h-4 text-white animate-pulse" />
-                <span>আজকের ই-পেপার</span>
-              </Link>
-              <Link 
-                href="/archive" 
-                onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center justify-center gap-2 bg-red-50 text-red-700 hover:bg-red-700 hover:text-white py-2.5 rounded-lg text-sm font-bold border border-red-150 transition-all"
-              >
-                <span>আর্কাইভ</span>
-                <ChevronRight className="w-4 h-4" />
-              </Link>
-              <Link 
-                href="/admin" 
-                onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center justify-center gap-2 bg-gray-50 text-gray-750 hover:text-red-750 py-2.5 rounded-lg text-sm font-bold border border-gray-200 transition-all"
-              >
-                <Settings className="w-4 h-4" />
-                <span>পোর্টাল এডমিন</span>
-              </Link>
-            </div>
+      {/* Dynamic Live Breaking News Ticker */}
+      <BreakingTicker />
 
-            <div className="text-xs font-bold text-gray-400 mb-2.5 uppercase tracking-wider">ক্যাটেগরি সমূহ</div>
-            <ul className="flex flex-col gap-1 overflow-y-auto flex-1 font-bangla">
-              {categoriesList.map(cat => (
-                <li key={cat.value}>
-                  <Link
-                    href={`/?category=${cat.value}`}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="w-full text-left px-3 py-2.5 rounded-md text-sm font-bold transition-all flex items-center justify-between text-gray-700 hover:bg-gray-50"
-                  >
-                    <span>{cat.label}</span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-
-            <div className="mt-auto border-t pt-4 border-gray-200 text-[11px] text-gray-500 font-medium">
-              <div>{today}</div>
-              <div className="mt-1 font-mono text-[10px]">DB: LIVE</div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 1. Top Bar */}
-      <div className="border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 py-1.5 flex justify-between items-center text-sm text-gray-700">
-          <div className="flex items-center gap-4">
-            <span className="font-bangla font-medium">{today}</span>
-            <WeatherWidget />
-          </div>
-          <div className="flex items-center gap-4">
-            <span className="hidden sm:inline-block font-mono text-[11px] font-bold text-gray-400 bg-gray-100 border border-gray-200 px-2 py-0.5 rounded">
-              DB: LIVE
-            </span>
-            <Link href="/epaper" className="flex items-center gap-1.5 font-bold text-white bg-amber-600 hover:bg-amber-700 cursor-pointer font-bangla transition-all shadow-sm px-2.5 py-1 rounded border border-amber-500 text-xs sm:text-sm animate-pulse">
-              <Compass className="w-3.5 h-3.5" />
-              <span>আজকের ই-পেপার</span>
-            </Link>
-            <Link href="/admin" className="flex items-center gap-1.5 font-bold hover:text-red-700 text-red-600 cursor-pointer font-bangla transition-colors border border-red-200 bg-red-50/50 px-2.5 py-1 rounded text-xs sm:text-sm">
-              <Settings className="w-3.5 h-3.5" />
-              <span>পোর্টাল এডমিন</span>
-            </Link>
-            <div className="flex items-center gap-3 border-l border-gray-300 pl-4">
-              <Facebook className="w-4 h-4 cursor-pointer text-gray-500 hover:text-blue-600 transition-colors" />
-              <Twitter className="w-4 h-4 cursor-pointer text-gray-500 hover:text-blue-400 transition-colors" />
-              <Youtube className="w-4 h-4 cursor-pointer text-gray-500 hover:text-red-600 transition-colors" />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* 2. Main Header Branding */}
-      <header className="border-b-[3px] border-red-700 py-6 bg-white">
-        <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-4 w-full md:w-auto justify-between md:justify-start">
-            <button 
-              onClick={() => setMobileMenuOpen(true)}
-              className="md:hidden text-gray-800 hover:text-red-700 transition-colors p-1"
-              aria-label="মোবাইল বাটন"
-            >
-              <Menu className="w-7 h-7" />
-            </button>
-            <Link 
-              href="/"
-              className="text-3xl md:text-4xl lg:text-5xl font-black text-red-700 tracking-tight cursor-pointer" 
-              style={{ fontFamily: 'var(--font-serif-bangla), Georgia, serif' }}
-            >
-              মানবাধিকার খবর
-            </Link>
-            <div className="md:hidden text-gray-800 w-6 h-6" /> {/* Spacer */}
-          </div>
-          
-          <div className="w-full max-w-sm">
-            <form onSubmit={handleSearchSubmit} className="relative w-full">
-              <input 
-                type="text" 
-                placeholder="খুঁজুন..." 
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full border border-gray-300 bg-white rounded max-h-11 py-2 pl-4 pr-10 focus:outline-none focus:border-red-600 focus:ring-1 focus:ring-red-600 transition-all font-bangla text-sm text-gray-800"
-              />
-              <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-650">
-                <Search className="w-5 h-5" />
-              </button>
-            </form>
-          </div>
-        </div>
-      </header>
-
-      {/* 3. Navigation Bar */}
-      <nav className="border-b border-gray-200 sticky top-0 bg-white z-50 shadow-sm overflow-x-auto">
-        <div className="max-w-7xl mx-auto px-4">
-          <ul className="flex items-center gap-6 text-[16px] font-bold text-gray-800 py-3 font-bangla whitespace-nowrap select-none">
-            {categoriesList.map(cat => (
-              <li 
-                key={cat.value}
-                className="cursor-pointer transition-all hover:text-red-700"
-              >
-                <Link href={`/?category=${cat.value}`}>
-                  {cat.label}
-                </Link>
-              </li>
-            ))}
-            <li className="text-red-700 hover:text-red-850 font-extrabold border-l border-gray-350 pl-4 flex items-center h-5">
-              <Link href="/epaper" className="flex items-center gap-1.5 cursor-pointer text-red-700 border-b-[3px] border-red-700 pb-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-red-650 animate-ping"></span>
-                <span className="font-bangla">ই-পেপার</span>
-              </Link>
-            </li>
-            <li className="ml-auto flex items-center gap-2.5">
-              <Link 
-                href="/submit-news" 
-                className="flex items-center gap-1.5 bg-red-700 text-white hover:bg-red-850 px-3.5 py-1.5 rounded-full text-xs font-extrabold transition-all shadow-sm hover:shadow active:scale-95 cursor-pointer"
-              >
-                <PenTool className="w-3.5 h-3.5 animate-pulse" />
-                <span>সংবাদ পাঠান</span>
-              </Link>
-              
-              <Link 
-                href="/archive" 
-                className="hidden md:flex items-center gap-1.5 bg-red-50 text-red-700 hover:bg-red-700 hover:text-white px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm border border-red-150 cursor-pointer"
-              >
-                <span>আর্কাইভ</span>
-                <ChevronRight className="w-3.5 h-3.5" />
-              </Link>
-            </li>
-          </ul>
-        </div>
-      </nav>
-
-      {/* 4. Breaking News Ticker (Live headings) */}
-      <div className="bg-gray-100 border-b border-gray-200 block">
-        <div className="max-w-7xl mx-auto px-4 py-2 flex items-center">
-          <div className="bg-red-700 text-white px-3 py-1 flex items-center gap-2 text-[15px] font-bold whitespace-nowrap z-10 hidden sm:flex shrink-0">
-             <span className="w-2 h-2 rounded-full bg-white animate-pulse"></span>
-             ব্রেকিং নিউজ
-          </div>
-          <div className="overflow-hidden flex-1 relative flex items-center ml-0 sm:ml-4 group">
-             <div className="animate-marquee whitespace-nowrap flex w-max items-center text-[15px] font-medium text-gray-800 font-bangla group-hover:[animation-play-state:paused] cursor-pointer">
-                {articles.map((art, idx) => (
-                  <span key={art._id + '-' + idx} className="contents">
-                    <span className="mx-4 text-red-650">■</span>
-                    <span className="hover:text-red-750 transition-colors uppercase leading-none">{art.title}</span>
-                  </span>
-                ))}
-                {articles.length === 0 && (
-                  <>
-                    <span className="mx-4 text-red-650">■</span>
-                    <span>মানবাধিকার খবর ডিজিটাল ই-পেপার সংস্করণে আপনাকে স্বাগতম...</span>
-                  </>
-                )}
-             </div>
-          </div>
-        </div>
+      {/* Top Banner Ad position */}
+      <div className="max-w-[1500px] w-full mx-auto px-4 mt-6">
+        <AdBanner position="top_banner" className="w-full" aspectRatio="aspect-[6/1] sm:aspect-[8/1] md:aspect-[10/1]" maxAds={1} />
       </div>
 
       {/* 5. Main E-Paper Display Desk */}
@@ -507,21 +370,53 @@ export default function EPaper() {
                 ডিফল্ট লাইভ ডেমো সংস্করণ
               </span>
             ) : (
-              <select
-                value={selectedCollectionIndex}
-                onChange={(e) => {
-                  setSelectedCollectionIndex(Number(e.target.value));
-                  setCurrentPage(0);
-                  setZoom(1);
-                }}
-                className="bg-white border-2 border-[#E4DFD5] text-gray-900 font-extrabold py-2 px-3.5 rounded focus:outline-none focus:border-[#BC1E2D] focus:ring-1 focus:ring-[#BC1E2D] text-sm cursor-pointer border-neutral-300 font-sans shadow-xs hover:border-red-600 transition-colors"
-              >
-                {collections.map((col, idx) => (
-                  <option key={col._id} value={idx}>
-                    {col.monthName} ({(col.pages || []).length} পাতা)
-                  </option>
-                ))}
-              </select>
+              <div className="flex flex-wrap items-center gap-3">
+                <select
+                  value={selectedCollectionIndex}
+                  onChange={(e) => {
+                    setSelectedCollectionIndex(Number(e.target.value));
+                    setCurrentPage(0);
+                    setZoom(1);
+                  }}
+                  className="bg-white border-2 border-[#E4DFD5] text-gray-900 font-extrabold py-2 px-3.5 rounded focus:outline-none focus:border-[#BC1E2D] focus:ring-1 focus:ring-[#BC1E2D] text-sm cursor-pointer border-neutral-300 font-sans shadow-xs hover:border-red-600 transition-colors"
+                >
+                  {collections.map((col, idx) => (
+                    <option key={col._id} value={idx}>
+                      {col.monthName} ({(col.pages || []).length} পাতা)
+                    </option>
+                  ))}
+                </select>
+
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs font-bold text-gray-500 font-sans">তারিখ খুঁজুন:</span>
+                  <input
+                    type="date"
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (!val) return;
+                      const idx = collections.findIndex(c => c._id === val);
+                      if (idx !== -1) {
+                        setSelectedCollectionIndex(idx);
+                        setCurrentPage(0);
+                        setZoom(1);
+                      } else {
+                        const monthPrefix = val.substring(0, 7);
+                        const matches = collections.filter(c => c._id.startsWith(monthPrefix));
+                        if (matches.length > 0) {
+                          const mainMatchIndex = collections.findIndex(c => c._id === matches[0]._id);
+                          setSelectedCollectionIndex(mainMatchIndex);
+                          setCurrentPage(0);
+                          setZoom(1);
+                          alert(`দুঃখিত, ${val} তারিখের ই-পেপার পাওয়া যায়নি। তবে ওই মাসের (${matches[0].monthName}) ই-পেপার সংস্করণ লোড করা হলো।`);
+                        } else {
+                          alert(`দুঃখিত, ${val} তারিখের কোনো ই-পেপার সংস্করণ পাওয়া যায়নি।`);
+                        }
+                      }
+                    }}
+                    className="bg-white border-2 border-[#E4DFD5] text-gray-950 font-bold py-1.5 px-3 rounded focus:outline-none focus:border-[#BC1E2D] text-sm font-sans"
+                  />
+                </div>
+              </div>
             )}
           </div>
           
@@ -645,8 +540,8 @@ export default function EPaper() {
                        className="transition-transform duration-300 ease-out flex justify-center items-start origin-top"
                      >
                        <ProgressiveImage 
-                          src={activePages[currentPage].image} 
-                          alt={activePages[currentPage].title} 
+                          src={activePage.image} 
+                          alt={activePage.title} 
                           width={1200}
                           height={1600}
                           priority
@@ -658,7 +553,7 @@ export default function EPaper() {
                    {/* Bottom bar inside card */}
                    <div className="mt-4 flex flex-col sm:flex-row items-center justify-between border-t border-gray-200 pt-3 text-xs sm:text-sm font-bold gap-2">
                      <span className="text-neutral-700">
-                       পাতা {toBengaliDigits(activePages[currentPage].id)}: {activePages[currentPage].title}
+                       পাতা {toBengaliDigits(activePage.id)}: {activePage.title}
                      </span>
                      <span className="text-[#BC1E2D] flex items-center gap-1 whitespace-nowrap">
                        <span className="w-1.5 h-1.5 bg-[#BC1E2D] rounded-full animate-ping"></span>
@@ -671,6 +566,21 @@ export default function EPaper() {
                </div>
              )}
            </div>
+
+            {/* Right Sidebar Ad Column */}
+            <div className="w-full lg:w-72 shrink-0 hidden xl:flex flex-col gap-4">
+              <div className="bg-white border border-[#E4DFD5] p-3.5 rounded-lg shadow-xs">
+                <span className="text-[9px] font-bold text-gray-400 block mb-2 font-sans text-center uppercase tracking-widest">বিজ্ঞাপন</span>
+                <AdBanner position="sidebar" className="w-full" aspectRatio="aspect-[4/5]" maxAds={1} />
+              </div>
+              <div className="bg-white border border-[#E4DFD5] p-3.5 rounded-lg shadow-xs">
+                <AdBanner position="in_article" className="w-full" aspectRatio="aspect-square" maxAds={1} />
+              </div>
+              <div className="bg-white border border-[#E4DFD5] p-3.5 rounded-lg shadow-xs">
+                <AdBanner position="below_header" className="w-full" aspectRatio="aspect-[3/2]" maxAds={1} />
+              </div>
+            </div>
+
          </div>
        </div>
  
@@ -747,92 +657,8 @@ export default function EPaper() {
         </div>
       </div>
 
-      {/* 7. Homepage-wise Brand Footer */}
-      <footer className="bg-[#1C1C1E] text-white">
-        <div className="max-w-7xl mx-auto px-4 py-12 md:py-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8 border-b border-white/10">
-           
-           {/* Brand & Socials */}
-           <div className="col-span-1">
-             <div className="text-3xl md:text-4xl font-[900] text-white tracking-tight mb-6" style={{ fontFamily: 'var(--font-serif-bangla), Georgia, serif' }}>
-              মানবাধিকার খবর
-             </div>
-             <p className="text-gray-400 text-[14px] leading-relaxed mb-6 font-medium font-bangla">
-               দেশ ও বিদেশের সর্বশেষ সত্য ও বস্তুনিষ্ঠ খবরের নির্ভরযোগ্য অনলাইন নিউজ পোর্টাল।
-             </p>
-             <div className="flex gap-4">
-                <a href="#" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-blue-650 hover:text-white transition-colors text-white">
-                  <Facebook className="w-5 h-5" />
-                </a>
-                <a href="#" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-blue-400 hover:text-white transition-colors text-white">
-                  <Twitter className="w-5 h-5" />
-                </a>
-                <a href="#" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-red-650 hover:text-white transition-colors text-white">
-                  <Youtube className="w-5 h-5" />
-                </a>
-             </div>
-           </div>
-
-           {/* Editor & Publisher */}
-           <div>
-             <h3 className="text-base font-bold mb-6 text-white uppercase tracking-wider font-sans border-b-2 border-white/20 pb-2 inline-block">Editor & Publisher</h3>
-             <div className="space-y-2 text-gray-300 font-sans">
-               <p className="font-bold text-base text-white">Md Reaz Uddin</p>
-               <p className="text-xs text-amber-500 font-bold uppercase tracking-wider">Editor & Publisher</p>
-               <p className="text-xs text-gray-400 leading-normal mt-2 font-bangla">
-                 মানবাধিকার উন্নয়ন ও বস্তুনিষ্ঠ সাংবাদিকতায় প্রতিশ্রুতিবদ্ধ।
-               </p>
-             </div>
-           </div>
-
-           {/* Editorial Office */}
-           <div>
-             <h3 className="text-base font-bold mb-6 text-white uppercase tracking-wider font-sans border-b-2 border-white/20 pb-2 inline-block">Editorial Office</h3>
-             <div className="space-y-3 text-gray-300 text-sm font-sans leading-relaxed">
-               <p className="flex items-start gap-1.5">
-                 <MapPin className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
-                 <span>
-                   <strong>Kabbokosh Bhabon</strong><br />
-                   Level-5, Suite#18,<br />
-                   Kawran Bazar, Dhaka-1215.
-                 </span>
-               </p>
-             </div>
-           </div>
-
-           {/* Column 4 - Contact Info */}
-           <div>
-             <h3 className="text-base font-bold mb-6 text-white uppercase tracking-wider font-sans border-b-2 border-white/20 pb-2 inline-block">যোগাযোগ ও তথ্য</h3>
-             <div className="space-y-2.5 text-gray-300 text-sm font-sans">
-               <p className="flex items-center gap-1.5">
-                 <Mail className="w-4 h-4 text-red-500 shrink-0" />
-                 <span className="text-xs">manabadhikarkhabar11@gmail.com</span>
-               </p>
-               <p className="flex items-center gap-1.5">
-                 <Phone className="w-4 h-4 text-red-500 shrink-0" />
-                 <span>+88-02-41010307</span>
-               </p>
-               <p className="flex items-center gap-1.5">
-                 <Smartphone className="w-4 h-4 text-red-500 shrink-0" />
-                 <span>+8801978882223</span>
-               </p>
-               <p className="flex items-center gap-1.5">
-                 <Printer className="w-4 h-4 text-red-500 shrink-0" />
-                 <span className="text-xs">Fax: +88-02-41010308</span>
-               </p>
-             </div>
-           </div>
-        </div>
-
-        {/* Footer Copyright Bottom Strip */}
-        <div className="max-w-7xl mx-auto px-4 py-6 flex flex-col md:flex-row justify-between items-center text-gray-500 text-xs gap-4 font-sans">
-          <span className="font-bangla">© ২০২৬ মানবাধিকার খবর। সর্বস্বত্ব সংরক্ষিত।</span>
-          <div className="flex gap-4 font-bangla">
-            <a href="#" className="hover:text-white transition-colors">বিজ্ঞাপন</a>
-            <span>•</span>
-            <a href="#" className="hover:text-white transition-colors">প্রতিনিধি</a>
-          </div>
-        </div>
-      </footer>
+      {/* Modular Unified Footer */}
+      <Footer />
 
     </div>
   );
