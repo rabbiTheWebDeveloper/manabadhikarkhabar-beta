@@ -11,6 +11,9 @@ import Image from 'next/image';
 import { LazyImage } from '@/components/lazy-image';
 import { WeatherWidget } from '@/components/weather-widget';
 import { RelatedArticles } from '@/components/related-articles';
+import BreakingTicker from '@/components/public/BreakingTicker';
+import Footer from '@/components/public/Footer';
+import AdBanner from '@/components/AdBanner';
 import Link from 'next/link';
 import { Article } from '@/lib/types';
 import { trackPageView } from '@/lib/analytics';
@@ -557,14 +560,6 @@ export default function Page() {
                 <span>আর্কাইভ</span>
                 <ChevronRight className="w-4 h-4" />
               </Link>
-              <Link 
-                href="/admin" 
-                onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center justify-center gap-2 bg-gray-50 text-gray-750 hover:text-red-750 py-2.5 rounded-lg text-sm font-bold border border-gray-200 transition-all"
-              >
-                <Settings className="w-4 h-4" />
-                <span>পোর্টাল এডমিন</span>
-              </Link>
             </div>
 
             <div className="text-xs font-bold text-gray-400 mb-2.5 uppercase tracking-wider">ক্যাটেগরি সমূহ</div>
@@ -607,17 +602,6 @@ export default function Page() {
             <WeatherWidget />
           </div>
           <div className="flex items-center gap-4">
-            <span className="hidden sm:inline-block font-mono text-[11px] font-bold text-gray-400 bg-gray-100 px-2 py-0.5 rounded border border-gray-200">
-              DB: {dbSource === 'mongodb' ? '🟢 MONGO LIVE' : '🟡 LOCAL STREAM'}
-            </span>
-            <Link href="/epaper" className="flex items-center gap-1.5 font-bold text-white bg-amber-600 hover:bg-amber-700 cursor-pointer font-bangla transition-all shadow-sm px-2.5 py-1 rounded border border-amber-500 text-xs sm:text-sm animate-pulse">
-              <Compass className="w-3.5 h-3.5" />
-              <span>আজকের ই-পেপার</span>
-            </Link>
-            <Link href="/admin" className="flex items-center gap-1.5 font-bold hover:text-red-700 text-red-600 cursor-pointer font-bangla transition-colors border border-red-200 bg-red-50/50 px-2.5 py-1 rounded text-xs sm:text-sm">
-              <Settings className="w-3.5 h-3.5 animate-spin-slow" />
-              <span>পোর্টাল এডমিন</span>
-            </Link>
             <div className="flex items-center gap-3 border-l border-gray-300 pl-4">
               <Facebook className="w-4 h-4 cursor-pointer text-gray-500 hover:text-blue-600 transition-colors" />
               <Twitter className="w-4 h-4 cursor-pointer text-gray-500 hover:text-blue-400 transition-colors" />
@@ -703,32 +687,12 @@ export default function Page() {
         </div>
       </nav>
 
-      {/* Breaking News Ticker */}
-      <div className="bg-gray-100 border-b border-gray-200 block">
-        <div className="max-w-7xl mx-auto px-4 py-2 flex items-center">
-          <div className="bg-red-700 text-white px-3 py-1 flex items-center gap-2 text-[15px] font-bold whitespace-nowrap z-10 hidden sm:flex shrink-0">
-             <span className="w-2 h-2 rounded-full bg-white animate-pulse"></span>
-             ব্রেকিং নিউজ
-          </div>
-          <div className="overflow-hidden flex-1 relative flex items-center ml-0 sm:ml-4 group">
-             <div className="animate-marquee whitespace-nowrap flex w-max items-center text-[15px] font-medium text-gray-800 font-bangla group-hover:[animation-play-state:paused] cursor-pointer">
-                {/* Dynamically stream live marquee headlines */}
-                {articles.map((art, idx) => (
-                  <span key={art._id + '-' + idx} className="contents">
-                    <span className="mx-4 text-red-600">■</span>
-                    <span className="hover:text-red-700 transition-colors uppercase leading-none">{art.title}</span>
-                  </span>
-                ))}
-                {/* Fallback if list is empty */}
-                {articles.length === 0 && (
-                  <>
-                    <span className="mx-4 text-red-600">■</span>
-                    <span>মানবাধিকার খবর নিউজ পোর্টালে আপনার স্বাগতম...</span>
-                  </>
-                )}
-             </div>
-          </div>
-        </div>
+      {/* Breaking News Ticker — admin-managed + article headlines fallback */}
+      <BreakingTicker fallbackHeadlines={articles.slice(0, 10).map(a => a.title)} />
+
+      {/* Top Banner Ad */}
+      <div className="max-w-7xl mx-auto px-4 mt-3 hidden md:block">
+        <AdBanner position="top_banner" aspectRatio="aspect-[728/90]" />
       </div>
 
       {/* Main Content Area */}
@@ -1085,44 +1049,9 @@ export default function Page() {
                 </div>
               </div>
  
-              {/* Dynamic Ad Banner */}
-              {(() => {
-                const activeSidebarAd = ads.find(ad => ad.position === 'sidebar' && ad.isActive);
-                if (activeSidebarAd) {
-                  return (
-                    <a 
-                      href={activeSidebarAd.linkUrl} 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
-                      className="block w-full aspect-[3/4] mt-6 md:mt-8 border border-gray-200 relative overflow-hidden group cursor-pointer"
-                      title={activeSidebarAd.title}
-                    >
-                      <Image 
-                        src={activeSidebarAd.imgUrl} 
-                        alt={activeSidebarAd.title}
-                        fill
-                        className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
-                        referrerPolicy="no-referrer"
-                      />
-                      <div className="absolute top-2 left-2 bg-black/60 text-[9px] uppercase tracking-wider text-white px-2 py-0.5 rounded font-bold font-sans z-10 select-none">
-                        PROMOTED AD
-                      </div>
-                    </a>
-                  );
-                }
-                return (
-                  <div className="w-full aspect-[3/4] bg-gray-100 mt-6 md:mt-8 flex flex-col items-center justify-center text-gray-400 group cursor-pointer border border-gray-200 relative overflow-hidden">
-                     <div className="absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-200"></div>
-                     <div className="relative z-10 flex flex-col items-center">
-                       <span className="text-[10px] uppercase tracking-[0.2em] mb-4 bg-white/50 px-2 py-0.5 rounded text-gray-500 font-bold">Advertisement</span>
-                       <div className="w-16 h-16 bg-white rounded-full mb-3 flex items-center justify-center shadow-sm">
-                         <Search className="w-6 h-6 text-gray-300" />
-                       </div>
-                       <span className="font-bold text-gray-600 text-lg group-hover:text-gray-800 transition-colors">বিজ্ঞাপন দিন</span>
-                     </div>
-                  </div>
-                );
-              })()}
+              {/* Sidebar Ad Banners — multiple positions */}
+              <AdBanner position="sidebar" aspectRatio="aspect-[3/4]" className="mt-6 md:mt-8" />
+              <AdBanner position="in_article" aspectRatio="aspect-[3/2]" className="mt-4" />
  
             </aside>
  
@@ -1156,7 +1085,10 @@ export default function Page() {
       </main>
       
       {/* Footer */}
-      <footer className="bg-[#1C1C1E] text-white">
+      <Footer />
+
+      {/* === Legacy footer hidden, replaced by Footer component === */}
+      {false && <footer className="bg-[#1C1C1E] text-white">
         <div className="max-w-7xl mx-auto px-4 py-12 md:py-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8 border-b border-white/10">
            
            {/* Brand & Socials */}
@@ -1240,7 +1172,7 @@ export default function Page() {
             <a href="#" className="hover:text-white transition-colors">প্রতিনিধি</a>
           </div>
         </div>
-      </footer>
+      </footer>}
 
       {/* Hidden Print-Specific Container */}
       {printTarget && (
