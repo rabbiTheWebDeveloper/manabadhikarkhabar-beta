@@ -781,7 +781,7 @@ function PageContent() {
               </div>
  
               {/* Sidebar Ad Banners — multiple positions */}
-              <AdBanner position="sidebar" aspectRatio="aspect-[3/4]" className="mt-6 md:mt-8" />
+              <AdBanner position="sidebar" aspectRatio="aspect-[3/4]" className="mt-6 md:mt-8" maxAds={3} />
               <AdBanner position="in_article" aspectRatio="aspect-[3/2]" className="mt-4" />
  
             </aside>

@@ -7,7 +7,7 @@ const AdSchema = new Schema(
     linkUrl: { type: String, required: true },
     position: {
       type: String,
-      enum: ["sidebar", "top_banner"],
+      enum: ["sidebar", "top_banner", "in_article", "below_header", "footer_banner"],
       default: "sidebar",
       index: true
     },

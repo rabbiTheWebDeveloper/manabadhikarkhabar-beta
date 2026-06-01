@@ -227,6 +227,9 @@ export default function AdsManagementPage() {
                 >
                   <option value="sidebar">সাইডবার ব্যানার</option>
                   <option value="top_banner">শীর্ষ হেডার ব্যানার</option>
+                  <option value="in_article">আর্টিকেলের ভেতরে</option>
+                  <option value="below_header">হেডারের নিচে</option>
+                  <option value="footer_banner">ফুটার ব্যানার</option>
                 </select>
               </div>
 
@@ -390,8 +393,10 @@ export default function AdsManagementPage() {
                 </div>
                 <div className="absolute top-3.5 left-3.5">
                   <span className={`text-[10px] font-extrabold px-3 py-1.5 rounded-full shadow-[0_4px_10px_rgba(0,0,0,0.03)] border border-white/20 ${
-                    ad.position === 'sidebar' ? 'bg-blue-600 text-white' : 'bg-orange-500 text-white'
-                  }`}>{ad.position === 'sidebar' ? 'সাইডবার' : 'শীর্ষ ব্যানার'}</span>
+                    ad.position === 'sidebar' ? 'bg-blue-600 text-white' : ad.position === 'top_banner' ? 'bg-orange-500 text-white' : 'bg-purple-600 text-white'
+                  }`}>
+                    {ad.position === 'sidebar' ? 'সাইডবার' : ad.position === 'top_banner' ? 'শীর্ষ ব্যানার' : ad.position === 'in_article' ? 'আর্টিকেলের ভেতরে' : ad.position === 'below_header' ? 'হেডারের নিচে' : 'ফুটার ব্যানার'}
+                  </span>
                 </div>
               </div>
 
@@ -401,7 +406,12 @@ export default function AdsManagementPage() {
                   <h3 className="font-extrabold text-gray-800 text-sm group-hover:text-red-600 transition-colors line-clamp-1 mb-1" title={ad.title}>
                     {ad.title}
                   </h3>
-                  <p className="text-[10px] text-gray-400 font-semibold tracking-wider uppercase">পজিশন: {ad.position === 'sidebar' ? 'সাইডবার উইজেট' : 'হেডার সেকশন'}</p>
+                  <p className="text-[10px] text-gray-400 font-semibold tracking-wider uppercase">পজিশন: {
+                    ad.position === 'sidebar' ? 'সাইডবার উইজেট' : 
+                    ad.position === 'top_banner' ? 'হেডার সেকশন' :
+                    ad.position === 'in_article' ? 'আর্টিকেলের ভেতরে' :
+                    ad.position === 'below_header' ? 'হেডারের নিচে' : 'ফুটার ব্যানার'
+                  }</p>
                 </div>
 
                 <div className="flex items-center justify-between border-t border-gray-50 pt-4">
