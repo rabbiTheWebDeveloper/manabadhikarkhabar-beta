@@ -153,18 +153,6 @@ export default async function NewsDetailsPage(
   if (!article) {
     return (
       <div className="flex flex-col min-h-screen bg-slate-50 font-sans text-gray-850">
-        <header className="border-b-[3px] border-red-700 py-6 bg-white shrink-0">
-          <div className="max-w-7xl mx-auto px-4 flex justify-between items-center">
-            <Link href="/" className="text-3xl font-black text-red-700 tracking-tight" style={{ fontFamily: 'var(--font-serif-bangla)' }}>
-              মানবাধিকার খবর
-            </Link>
-            <Link href="/" className="flex items-center gap-2 hover:bg-gray-100 px-3 py-1.5 border border-gray-200 rounded transition-colors text-xs font-bold font-bangla">
-              <ArrowLeft className="w-4 h-4" />
-              <span>মূল পাতায় যান</span>
-            </Link>
-          </div>
-        </header>
-
         <main className="flex-1 flex flex-col items-center justify-center p-8 text-center max-w-md mx-auto">
           <div className="bg-white border rounded-2xl p-8 shadow-sm space-y-4">
             <AlertCircle className="w-12 h-12 text-red-600 mx-auto" />

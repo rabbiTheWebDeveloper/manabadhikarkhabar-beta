@@ -281,72 +281,41 @@ export default function EPaper() {
   const dateOptions: Intl.DateTimeFormatOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
   const today = new Intl.DateTimeFormat('bn-BD', dateOptions).format(new Date());
 
-  // Defensive bounds check for currentPage data to prevent runtime crashes
-  const activePage = activePages[currentPage] || activePages[0] || { id: 1, title: 'কোনো পাতা নেই', image: '' };
-
   if (collectionsLoading) {
     return (
-      <div className="min-h-screen flex flex-col font-bangla antialiased selection:bg-[#BC1E2D] selection:text-white transition-colors duration-200 bg-white text-[#1A1A1A]">
-        <Navbar 
-          selectedCategory="" 
-          onCategoryChange={handleCategoryChange} 
-          searchTerm={searchTerm} 
-          onSearchChange={handleSearchChange} 
-        />
-        <BreakingTicker />
-        <div className="flex-1 flex flex-col items-center justify-center py-20 px-4 bg-[#F6F4EE]">
-          <div className="flex flex-col items-center gap-4">
-            <div className="w-12 h-12 border-4 border-red-200 border-t-red-700 rounded-full animate-spin"></div>
-            <span className="text-sm font-bold text-gray-600 font-sans">ই-পেপার লোড হচ্ছে...</span>
-          </div>
+      <div className="flex-1 flex flex-col items-center justify-center py-20 px-4 bg-[#F6F4EE] font-bangla">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-red-200 border-t-red-700 rounded-full animate-spin"></div>
+          <span className="text-sm font-bold text-gray-600 font-sans">ই-পেপার লোড হচ্ছে...</span>
         </div>
-        <Footer />
       </div>
     );
   }
 
   if (!collectionsLoading && collections.length === 0) {
     return (
-      <div className="min-h-screen flex flex-col font-bangla antialiased selection:bg-[#BC1E2D] selection:text-white transition-colors duration-200 bg-white text-[#1A1A1A]">
-        <Navbar 
-          selectedCategory="" 
-          onCategoryChange={handleCategoryChange} 
-          searchTerm={searchTerm} 
-          onSearchChange={handleSearchChange} 
-        />
-        <BreakingTicker />
-        <div className="flex-1 flex flex-col items-center justify-center py-16 px-4 bg-[#F6F4EE]">
-          <div className="bg-white border border-[#E4DFD5] p-8 md:p-12 rounded-2xl max-w-md w-full text-center shadow-lg">
-            <div className="w-16 h-16 bg-red-50 text-red-750 rounded-full flex items-center justify-center mx-auto mb-5 shadow-sm">
-              <Calendar size={32} className="animate-pulse text-[#BC1E2D]" />
-            </div>
-            <h3 className="text-xl font-black text-gray-950 mb-2">কোনো সংস্করণ নেই</h3>
-            <p className="text-sm text-gray-500 font-sans leading-relaxed mb-6">
-              দুঃখিত, বর্তমানে ই-পেপার সংস্করণের কোনো আর্কাইভ বা আজকের সংস্করণ ডাটাবেজে প্রকাশিত হয়নি। অনুগ্রহ করে পরে আবার চেষ্টা করুন।
-            </p>
-            <Link href="/" className="inline-flex items-center gap-2 bg-[#BC1E2D] hover:bg-red-800 text-white font-bold py-2.5 px-6 rounded-lg text-sm transition-all shadow hover:shadow-md cursor-pointer">
-              প্রচ্ছদে ফিরে যান
-            </Link>
+      <div className="flex-1 flex flex-col items-center justify-center py-16 px-4 bg-[#F6F4EE] font-bangla">
+        <div className="bg-white border border-[#E4DFD5] p-8 md:p-12 rounded-2xl max-w-md w-full text-center shadow-lg animate-fade-in">
+          <div className="w-16 h-16 bg-red-50 text-red-750 rounded-full flex items-center justify-center mx-auto mb-5 shadow-sm">
+            <Calendar size={32} className="animate-pulse text-[#BC1E2D]" />
           </div>
+          <h3 className="text-xl font-black text-gray-950 mb-2">কোনো সংস্করণ নেই</h3>
+          <p className="text-sm text-gray-500 font-sans leading-relaxed mb-6">
+            দুঃখিত, বর্তমানে ই-পেপার সংস্করণের কোনো আর্কাইভ বা আজকের সংস্করণ ডাটাবেজে প্রকাশিত হয়নি। অনুগ্রহ করে পরে আবার চেষ্টা করুন।
+          </p>
+          <Link href="/" className="inline-flex items-center gap-2 bg-[#BC1E2D] hover:bg-red-800 text-white font-bold py-2.5 px-6 rounded-lg text-sm transition-all shadow hover:shadow-md cursor-pointer">
+            প্রচ্ছদে ফিরে যান
+          </Link>
         </div>
-        <Footer />
       </div>
     );
   }
 
-  return (
-    <div className="min-h-screen flex flex-col font-bangla antialiased selection:bg-[#BC1E2D] selection:text-white transition-colors duration-200 bg-white text-[#1A1A1A]">
-      
-      {/* Dynamic Modular Navbar */}
-      <Navbar 
-        selectedCategory="" 
-        onCategoryChange={handleCategoryChange} 
-        searchTerm={searchTerm} 
-        onSearchChange={handleSearchChange} 
-      />
+  // Defensive bounds check for currentPage data to prevent runtime crashes
+  const activePage = activePages[currentPage] || activePages[0] || { id: 1, title: 'কোনো পাতা নেই', image: '' };
 
-      {/* Dynamic Live Breaking News Ticker */}
-      <BreakingTicker />
+  return (
+    <div className="w-full font-bangla">
 
       {/* Top Banner Ad position */}
       <div className="max-w-[1500px] w-full mx-auto px-4 mt-6">
@@ -657,8 +626,7 @@ export default function EPaper() {
         </div>
       </div>
 
-      {/* Modular Unified Footer */}
-      <Footer />
+
 
     </div>
   );

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { 
   Search, Menu, User, ChevronRight, 
   Facebook, Twitter, Instagram, Youtube, MapPin, Check, Plus, AlertCircle, Settings,
@@ -63,12 +64,15 @@ function formatScraperLastRunBengali(lastRunMs: number): string {
 }
 
 export default function Page() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const selectedCategory = searchParams.get('category') || 'all';
+  const searchTerm = searchParams.get('search') || '';
+
   const [activeTab, setActiveTab] = useState<'latest' | 'popular'>('latest');
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [articles, setArticles] = useState<Article[]>(INITIAL_ARTICLES);
   const [ads, setAds] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
   const [dbSource, setDbSource] = useState('local');
   const [selectedArticle, setSelectedArticleAction] = useState<Article | null>(null);
   const [printTarget, setPrintTarget] = useState<Article | null>(null);
@@ -468,221 +472,19 @@ export default function Page() {
           "addressRegion": "ঢাকা",
           "addressCountry": "BD"
         }
-      },
-      {
-        "@type": "WebSite",
-        "@id": "https://manabadhikarkhabar.com/#website",
-        "url": "https://manabadhikarkhabar.com",
-        "name": "মানবাধিকার খবর",
-        "description": "দেশ ও বিদেশের সর্বাধুনিক অনলাইন নিউজ পোর্টাল",
-        "publisher": {
-          "@id": "https://manabadhikarkhabar.com/#organization"
-        },
-        "potentialAction": {
-          "@type": "SearchAction",
-          "target": {
-            "@type": "EntryPoint",
-            "urlTemplate": "https://manabadhikarkhabar.com/?search={search_term_string}"
-          },
-          "query-input": "required name=search_term_string"
-        }
       }
     ]
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-white">
+    <div className="w-full">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(siteSchemaData) }}
       />
       
-      {/* Mobile Drawer Menu */}
-      {mobileMenuOpen && (
-        <div className="fixed inset-0 z-[100] flex md:hidden" role="dialog" aria-modal="true">
-          {/* Backdrop overlay */}
-          <div 
-            className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity duration-300" 
-            onClick={() => setMobileMenuOpen(false)}
-          />
-          
-          {/* Drawer container body */}
-          <div className="relative flex w-full max-w-[280px] flex-col bg-white p-5 shadow-2xl transition-all h-full animate-fade-in-left">
-            <div className="flex items-center justify-between border-b pb-4 mb-4">
-              <div 
-                onClick={() => { setSelectedCategory('all'); setMobileMenuOpen(false); }}
-                className="text-2xl font-black text-red-700 tracking-tight cursor-pointer font-serif-bangla"
-                style={{ fontFamily: 'var(--font-serif-bangla), Georgia, serif' }}
-              >
-                মানবাধিকার খবর
-              </div>
-              <button 
-                onClick={() => setMobileMenuOpen(false)}
-                className="rounded-full p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-950 focus:outline-none transition-colors"
-                aria-label="বন্ধ করুন"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Quick action buttons inside sidebar */}
-            <div className="flex flex-col gap-2.5 mb-6">
-              <Link 
-                href="/submit-news" 
-                onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center justify-center gap-2 bg-red-700 text-white hover:bg-red-800 py-2.5 rounded-lg text-sm font-extrabold transition-all shadow-sm"
-              >
-                <PenTool className="w-4 h-4" />
-                <span>সংবাদ পাঠান</span>
-              </Link>
-              <Link 
-                href="/epaper" 
-                onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center justify-center gap-2 bg-amber-50 text-amber-800 hover:bg-amber-100 py-2.5 rounded-lg text-sm font-extrabold transition-all border border-amber-200 shadow-sm"
-              >
-                <Compass className="w-4 h-4 text-amber-600 animate-pulse" />
-                <span>আজকের ই-পেপার</span>
-              </Link>
-              <Link 
-                href="/archive" 
-                onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center justify-center gap-2 bg-red-50 text-red-700 hover:bg-red-750 hover:text-white py-2.5 rounded-lg text-sm font-bold border border-red-150 transition-all"
-              >
-                <span>আর্কাইভ</span>
-                <ChevronRight className="w-4 h-4" />
-              </Link>
-            </div>
-
-            <div className="text-xs font-bold text-gray-400 mb-2.5 uppercase tracking-wider">ক্যাটেগরি সমূহ</div>
-            <ul className="flex flex-col gap-1 overflow-y-auto flex-1 font-bangla">
-              {categoriesList.map(cat => (
-                <li key={cat.value}>
-                  <button
-                    onClick={() => {
-                      setSelectedCategory(cat.value);
-                      setMobileMenuOpen(false);
-                    }}
-                    className={`w-full text-left px-3 py-2.5 rounded-md text-sm font-bold transition-all flex items-center justify-between ${
-                      selectedCategory === cat.value 
-                        ? 'bg-red-50 text-red-700' 
-                        : 'text-gray-700 hover:bg-gray-50'
-                    }`}
-                  >
-                    <span>{cat.label}</span>
-                    {selectedCategory === cat.value && <span className="w-1.5 h-1.5 rounded-full bg-red-650" />}
-                  </button>
-                </li>
-              ))}
-            </ul>
-
-            <div className="mt-auto border-t pt-4 text-[11px] text-gray-500 font-medium">
-              <div>রবিবার, ২৪ মে ২০২৬</div>
-              <div className="mt-1 font-mono text-[10px]">
-                DB: {dbSource === 'mongodb' ? '🟢 MONGO LIVE' : '🟡 LOCAL STREAM'}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Top Bar */}
-      <div className="border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 py-1.5 flex justify-between items-center text-sm text-gray-700">
-          <div className="flex items-center gap-4">
-            <span className="font-bangla font-medium">রবিবার, ২৪ মে ২০২৬</span>
-            <WeatherWidget />
-          </div>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-3 border-l border-gray-300 pl-4">
-              <Facebook className="w-4 h-4 cursor-pointer text-gray-500 hover:text-blue-600 transition-colors" />
-              <Twitter className="w-4 h-4 cursor-pointer text-gray-500 hover:text-blue-400 transition-colors" />
-              <Youtube className="w-4 h-4 cursor-pointer text-gray-500 hover:text-red-600 transition-colors" />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Header */}
-      <header className="border-b-[3px] border-red-700 py-6 bg-white">
-        <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-4 w-full md:w-auto justify-between md:justify-start">
-            <button 
-              onClick={() => setMobileMenuOpen(true)}
-              className="md:hidden text-gray-800 hover:text-red-700 transition-colors p-1"
-              aria-label="মোবাইল বাটন"
-            >
-              <Menu className="w-7 h-7" />
-            </button>
-            <div 
-              onClick={() => setSelectedCategory('all')}
-              className="text-3xl md:text-4xl lg:text-5xl font-black text-red-700 tracking-tight cursor-pointer" 
-              style={{ fontFamily: 'var(--font-serif-bangla), Georgia, serif' }}
-            >
-              মানবাধিকার খবর
-            </div>
-            <div className="md:hidden text-gray-800 w-6 h-6" /> {/* Spacer */}
-          </div>
-          
-          <div className="w-full max-w-sm">
-            <div className="relative w-full">
-              <input 
-                type="text" 
-                placeholder="খুঁজুন..." 
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full border border-gray-300 rounded max-h-11 py-2 pl-4 pr-10 focus:outline-none focus:border-red-600 focus:ring-1 focus:ring-red-600 transition-all font-bangla text-sm"
-              />
-              <Search className="w-5 h-5 absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Navigation & Category Filter */}
-      <nav className="border-b border-gray-200 sticky top-0 bg-white z-50 shadow-sm overflow-x-auto">
-        <div className="max-w-7xl mx-auto px-4">
-          <ul className="flex items-center gap-6 text-[16px] font-bold text-gray-800 py-3 font-bangla whitespace-nowrap select-none">
-            {categoriesList.map(cat => (
-              <li 
-                key={cat.value}
-                onClick={() => setSelectedCategory(cat.value)}
-                className={`cursor-pointer transition-all hover:text-red-700 ${selectedCategory === cat.value ? 'text-red-700 border-b-[3px] border-red-700 pb-1.5' : ''}`}
-              >
-                {cat.label}
-              </li>
-            ))}
-            <li className="text-red-700 hover:text-red-850 font-extrabold border-l border-gray-350 pl-4 flex items-center h-5">
-              <Link href="/epaper" className="flex items-center gap-1.5 cursor-pointer">
-                <span className="w-1.5 h-1.5 rounded-full bg-red-650 animate-ping"></span>
-                <span className="font-bangla">ই-পেপার</span>
-              </Link>
-            </li>
-            <li className="ml-auto flex items-center gap-2.5">
-              <Link 
-                href="/submit-news" 
-                className="flex items-center gap-1.5 bg-red-700 text-white hover:bg-red-850 px-3.5 py-1.5 rounded-full text-xs font-extrabold transition-all shadow-sm hover:shadow active:scale-95 cursor-pointer"
-              >
-                <PenTool className="w-3.5 h-3.5 animate-pulse" />
-                <span>সংবাদ পাঠান</span>
-              </Link>
-              
-              <Link 
-                href="/archive" 
-                className="hidden md:flex items-center gap-1.5 bg-red-50 text-red-700 hover:bg-red-700 hover:text-white px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm border border-red-150 cursor-pointer"
-              >
-                <span>আর্কাইভ</span>
-                <ChevronRight className="w-3.5 h-3.5" />
-              </Link>
-            </li>
-          </ul>
-        </div>
-      </nav>
-
-      {/* Breaking News Ticker — admin-managed + article headlines fallback */}
-      <BreakingTicker fallbackHeadlines={articles.slice(0, 10).map(a => a.title)} />
-
       {/* Top Banner Ad */}
-      <div className="max-w-7xl mx-auto px-4 mt-3 hidden md:block">
+      <div className="max-w-7xl mx-auto px-4 mt-3 hidden md:block animate-fade-in">
         <AdBanner position="top_banner" aspectRatio="aspect-[728/90]" />
       </div>
 
@@ -958,7 +760,7 @@ export default function Page() {
                       return (
                         <button
                           key={'trend-' + topic.name}
-                          onClick={() => setSelectedCategory(isSelected ? 'all' : topic.name)}
+                          onClick={() => router.push(`?category=${isSelected ? 'all' : topic.name}`)}
                           className={`group flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all border cursor-pointer font-sans ${
                             isSelected 
                               ? 'bg-red-700 border-red-700 text-white shadow-sm ring-1 ring-red-700' 
@@ -1014,96 +816,6 @@ export default function Page() {
         </div>
  
       </main>
-      
-      {/* Footer */}
-      <Footer />
-
-      {/* === Legacy footer hidden, replaced by Footer component === */}
-      {false && <footer className="bg-[#1C1C1E] text-white">
-        <div className="max-w-7xl mx-auto px-4 py-12 md:py-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8 border-b border-white/10">
-           
-           {/* Brand & Socials */}
-           <div className="col-span-1">
-             <div className="text-3xl md:text-4xl font-[900] text-white tracking-tight mb-6" style={{ fontFamily: 'var(--font-serif-bangla), Georgia, serif' }}>
-              মানবাধিকার খবর
-             </div>
-             <p className="text-gray-400 text-[14px] leading-relaxed mb-6 font-medium">
-               দেশ ও বিদেশের সর্বশেষ সত্য ও বস্তুনিষ্ঠ খবরের নির্ভরযোগ্য অনলাইন নিউজ পোর্টাল।
-             </p>
-             <div className="flex gap-4">
-                <a href="#" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-blue-600 hover:text-white transition-colors text-white">
-                  <Facebook className="w-5 h-5" />
-                </a>
-                <a href="#" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-blue-400 hover:text-white transition-colors text-white">
-                  <Twitter className="w-5 h-5" />
-                </a>
-                <a href="#" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-red-600 hover:text-white transition-colors text-white">
-                  <Youtube className="w-5 h-5" />
-                </a>
-             </div>
-           </div>
-
-           {/* Editor & Publisher */}
-           <div>
-             <h3 className="text-base font-bold mb-6 text-white uppercase tracking-wider font-sans border-b-2 border-white/20 pb-2 inline-block">Editor & Publisher</h3>
-             <div className="space-y-2 text-gray-300 font-sans">
-               <p className="font-bold text-base text-white">Md Reaz Uddin</p>
-               <p className="text-xs text-amber-500 font-bold uppercase tracking-wider">Editor & Publisher</p>
-               <p className="text-xs text-gray-400 leading-normal mt-2">
-                 মানবাধিকার উন্নয়ন ও বস্তুনিষ্ঠ সাংবাদিকতায় প্রতিশ্রুতিবদ্ধ।
-               </p>
-             </div>
-           </div>
-
-           {/* Editorial Office */}
-           <div>
-             <h3 className="text-base font-bold mb-6 text-white uppercase tracking-wider font-sans border-b-2 border-white/20 pb-2 inline-block">Editorial Office</h3>
-             <div className="space-y-3 text-gray-300 text-sm font-sans leading-relaxed">
-               <p className="flex items-start gap-1.5">
-                 <MapPin className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
-                 <span>
-                   <strong>Kabbokosh Bhabon</strong><br />
-                   Level-5, Suite#18,<br />
-                   Kawran Bazar, Dhaka-1215.
-                 </span>
-               </p>
-             </div>
-           </div>
-
-           {/* Column 4 - Contact Info */}
-           <div>
-             <h3 className="text-base font-bold mb-6 text-white uppercase tracking-wider font-sans border-b-2 border-white/20 pb-2 inline-block">যোগাযোগ ও তথ্য</h3>
-             <div className="space-y-2.5 text-gray-300 text-sm font-sans">
-               <p className="flex items-center gap-1.5">
-                 <Mail className="w-4 h-4 text-red-500 shrink-0" />
-                 <span className="text-xs">manabadhikarkhabar11@gmail.com</span>
-               </p>
-               <p className="flex items-center gap-1.5">
-                 <Phone className="w-4 h-4 text-red-500 shrink-0" />
-                 <span>+88-02-41010307</span>
-               </p>
-               <p className="flex items-center gap-1.5">
-                 <Smartphone className="w-4 h-4 text-red-500 shrink-0" />
-                 <span>+8801978882223</span>
-               </p>
-               <p className="flex items-center gap-1.5">
-                 <Printer className="w-4 h-4 text-red-500 shrink-0" />
-                 <span className="text-xs">Fax: +88-02-41010308</span>
-               </p>
-             </div>
-           </div>
-        </div>
-
-        {/* Footer Copyright Bottom Strip */}
-        <div className="max-w-7xl mx-auto px-4 py-6 flex flex-col md:flex-row justify-between items-center text-gray-500 text-xs gap-4 font-sans">
-          <span>© ২০২৬ মানবাধিকার খবর। সর্বস্বত্ব সংরক্ষিত।</span>
-          <div className="flex gap-4">
-            <a href="#" className="hover:text-white transition-colors">বিজ্ঞাপন</a>
-            <span>•</span>
-            <a href="#" className="hover:text-white transition-colors">প্রতিনিধি</a>
-          </div>
-        </div>
-      </footer>}
 
       {/* Hidden Print-Specific Container */}
       {printTarget && (

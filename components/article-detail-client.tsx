@@ -89,65 +89,16 @@ export function ArticleDetailClient({ article, sourceLabel, authorData }: Articl
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-slate-50 font-sans text-gray-850">
+    <div className="w-full">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }}
       />
       
-      {/* Top Bar for weather and metadata */}
-      <div className="border-b border-gray-200 bg-white no-print">
-        <div className="max-w-7xl mx-auto px-4 py-1.5 flex justify-between items-center text-sm text-gray-700">
-          <div className="flex items-center gap-4">
-            <span className="font-bangla font-medium">রবিবার, ২৪ মে ২০২৬</span>
-            <WeatherWidget />
-          </div>
-          <div className="flex items-center gap-4">
-            <span className="hidden sm:inline-block font-mono text-[11px] font-bold text-gray-400 bg-gray-150 px-2 py-0.5 rounded border">
-              DB: {sourceLabel}
-            </span>
-            <Link href="/admin" className="flex items-center gap-1.5 font-bold hover:text-red-700 text-red-600 cursor-pointer font-bangla transition-colors border border-red-200 bg-red-50/50 px-2.5 py-1 rounded">
-              <Settings className="w-3.5 h-3.5" />
-              <span>পোর্টাল এডমিন</span>
-            </Link>
-            <div className="flex items-center gap-3 border-l border-gray-300 pl-4">
-              <Facebook className="w-4 h-4 cursor-pointer text-gray-500 hover:text-blue-600 transition-colors" />
-              <Twitter className="w-4 h-4 cursor-pointer text-gray-500 hover:text-blue-400 transition-colors" />
-              <Youtube className="w-4 h-4 cursor-pointer text-gray-500 hover:text-red-600 transition-colors" />
-            </div>
-          </div>
-        </div>
-      </div>
-      
       {/* Top banner advertisement spot */}
       <div className="max-w-7xl mx-auto px-4 pt-4 no-print">
         <AdBanner position="top_banner" className="w-full" />
       </div>
-
-      {/* Main Brand Header */}
-      <header className="border-b-[3px] border-red-700 py-6 bg-white shadow-xs no-print">
-        <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-4 w-full md:w-auto justify-between md:justify-start">
-            <Link href="/" className="flex items-center gap-2 hover:bg-gray-100 px-3 py-1.5 rounded transition-colors text-sm font-bold border border-gray-200 text-gray-650 cursor-pointer">
-              <ArrowLeft className="w-4 h-4" />
-              <span>মূল পাতা</span>
-            </Link>
-            
-            <Link 
-              href="/" 
-              className="text-4xl md:text-5xl font-black text-red-700 tracking-tight cursor-pointer" 
-              style={{ fontFamily: 'var(--font-serif-bangla), Georgia, serif' }}
-            >
-              মানবাধিকার খবর
-            </Link>
-            <div className="md:hidden text-gray-800 w-6 h-6" />
-          </div>
-          <div className="text-gray-500 font-bold font-bangla text-base flex items-center gap-1.5 bg-gray-55 px-4 py-2 rounded-lg border border-gray-200 shadow-sm">
-            <Calendar className="w-4.5 h-4.5 text-red-700" />
-            <span>পড়ছেন: {article.category}</span>
-          </div>
-        </div>
-      </header>
 
       {/* Article Detail Body layout */}
       <main className="max-w-7xl mx-auto px-4 py-8 w-full flex-1">
@@ -334,63 +285,6 @@ export function ArticleDetailClient({ article, sourceLabel, authorData }: Articl
     </div>
   </main>
 
-      {/* Standard Footer */}
-      <footer className="bg-gray-900 text-gray-400 py-12 mt-auto border-t-[4px] border-red-700 font-bangla no-print">
-        <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 text-sm">
-          <div>
-            <h4 className="text-white text-lg font-black tracking-tight mb-4 text-red-500" style={{ fontFamily: 'var(--font-serif-bangla)' }}>মানবাধিকার খবর</h4>
-            <p className="text-gray-400 leading-relaxed text-xs">দেশ ও বিদেশের সর্বশেষ সত্য ও বস্তুনিষ্ঠ খবরের নির্ভরযোগ্য অনলাইন নিউজ পোর্টাল।</p>
-          </div>
-          <div>
-            <h4 className="text-white text-[15px] font-bold tracking-tight mb-4">Editor & Publisher</h4>
-            <div className="space-y-1 text-xs text-gray-300 font-sans">
-              <p className="font-bold text-sm text-white">Md Reaz Uddin</p>
-              <p className="text-[10px] text-amber-500 font-bold uppercase tracking-wider">Editor & Publisher</p>
-              <p className="text-[11px] text-gray-500 leading-normal mt-2">
-                মানবাধিকার উন্নয়ন ও বস্তুনিষ্ঠ সাংবাদিকতায় প্রতিশ্রুতিবদ্ধ।
-              </p>
-            </div>
-          </div>
-          <div>
-            <h4 className="text-white text-[15px] font-bold tracking-tight mb-4">Editorial Office</h4>
-            <div className="space-y-2 text-xs text-gray-300 font-sans">
-              <p className="flex items-start gap-1.5">
-                <MapPin className="w-3.5 h-3.5 text-red-500 shrink-0 mt-0.5" />
-                <span>
-                  <strong>Kabbokosh Bhabon</strong><br />
-                  Level-5, Suite#18,<br />
-                  Kawran Bazar, Dhaka-1215.
-                </span>
-              </p>
-            </div>
-          </div>
-          <div>
-            <h4 className="text-white text-[15px] font-bold tracking-tight mb-4">যোগাযোগ ও তথ্য</h4>
-            <div className="space-y-2 text-xs text-gray-300 font-sans">
-              <p className="flex items-center gap-1.5">
-                <Mail className="w-3.5 h-3.5 text-red-500 shrink-0" />
-                <span className="text-[11px]">manabadhikarkhabar11@gmail.com</span>
-              </p>
-              <p className="flex items-center gap-1.5">
-                <Phone className="w-3.5 h-3.5 text-red-500 shrink-0" />
-                <span>+88-02-41010307</span>
-              </p>
-              <p className="flex items-center gap-1.5">
-                <Smartphone className="w-3.5 h-3.5 text-red-500 shrink-0" />
-                <span>+8801978882223</span>
-              </p>
-              <p className="flex items-center gap-1.5">
-                <Printer className="w-3.5 h-3.5 text-red-500 shrink-0" />
-                <span>Fax: +88-02-41010308</span>
-              </p>
-            </div>
-          </div>
-        </div>
-        <div className="max-w-7xl mx-auto px-4 mt-8 pt-6 border-t border-gray-800 text-center text-xs text-gray-500">
-          <p>© ২০২৬ মানবাধিকার খবর। সমস্ত স্বত্ব সংরক্ষিত।</p>
-        </div>
-      </footer>
-
-    </div>
+</div>
   );
 }
