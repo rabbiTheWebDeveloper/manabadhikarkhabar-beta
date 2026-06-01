@@ -17,24 +17,27 @@ export default function LoginPage() {
 
   // Check if already authenticated on mount
   useEffect(() => {
+    let active = true;
     async function checkCurrentSession() {
       try {
         const res = await fetch('/api/auth/me');
         if (res.ok) {
           const data = await res.json();
-          if (data.authenticated) {
-            router.push('/admin');
+          if (data.authenticated && active) {
+            router.replace('/admin');
             return;
           }
         }
       } catch (err) {
         console.error('Session check failed', err);
       } finally {
-        setCheckingSession(false);
+        if (active) setCheckingSession(false);
       }
     }
     checkCurrentSession();
-  }, [router]);
+    return () => { active = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
