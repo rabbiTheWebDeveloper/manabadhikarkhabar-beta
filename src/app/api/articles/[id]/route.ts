@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
+import { revalidatePath } from 'next/cache';
 import { verifyToken } from '@/lib/auth-store';
 import { getArticleByIdQuery, updateArticleQuery, deleteArticleQuery } from '@/queries/article';
 
@@ -32,6 +33,9 @@ export async function PUT(
     const body = await req.json();
     
     const result = await updateArticleQuery(id, body);
+    revalidatePath('/');
+    revalidatePath('/archive');
+    revalidatePath(`/news/${id}`);
     return NextResponse.json(result);
   } catch (error: any) {
     return NextResponse.json({ error: error.message || 'Fatal error updating article' }, { status: 500 });
@@ -52,6 +56,8 @@ export async function DELETE(
 
     const { id } = await params;
     const result = await deleteArticleQuery(id);
+    revalidatePath('/');
+    revalidatePath('/archive');
     return NextResponse.json(result);
   } catch (error: any) {
     return NextResponse.json({ error: error.message || 'Fatal error deleting article' }, { status: 500 });

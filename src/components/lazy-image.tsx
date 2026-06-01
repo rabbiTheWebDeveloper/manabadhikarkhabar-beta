@@ -24,6 +24,7 @@ export function LazyImage({ src, alt, className = '', ...props }: LazyImageProps
         }`}
         onLoad={() => setIsLoaded(true)}
         loading="lazy"
+        sizes={props.fill && !props.sizes ? "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" : props.sizes}
         {...props}
       />
     </div>

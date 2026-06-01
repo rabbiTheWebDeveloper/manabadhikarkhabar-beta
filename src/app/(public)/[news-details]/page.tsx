@@ -1,8 +1,8 @@
 import { Metadata } from 'next';
-import { getDb, Article, Author, INITIAL_AUTHORS } from '@/lib/db';
-import { memoryArticles } from '@/app/api/articles/store';
+import { getDb, Article, Author } from '@/lib/db';
 import { ObjectId } from 'mongodb';
 import Link from 'next/link';
+import { notFound } from 'next/navigation';
 import { ArrowLeft, AlertCircle } from 'lucide-react';
 import { ArticleDetailClient } from '@/components/article-detail-client';
 import { generateSlug } from '@/lib/utils';
@@ -47,12 +47,7 @@ export async function generateMetadata(
     // ignore
   }
 
-  // Fallback to local memory articles
-  if (!article) {
-    article = memoryArticles.find(
-      a => a._id === newsDetails || generateSlug(a.title) === newsDetails
-    ) || null;
-  }
+
 
   if (!article) {
     return {
@@ -100,6 +95,11 @@ export default async function NewsDetailsPage(
 ) {
   const resolvedParams = await params;
   const newsDetails = decodeURIComponent(resolvedParams['news-details']);
+  
+  if (['sw.js', 'favicon.ico', 'robots.txt'].includes(newsDetails)) {
+    notFound();
+  }
+
   let article: Article | null = null;
   let sourceLabel = '';
 
@@ -138,16 +138,7 @@ export default async function NewsDetailsPage(
     // ignore
   }
 
-  // Fallback to local memory articles
-  if (!article) {
-    const matched = memoryArticles.find(
-      a => a._id === newsDetails || generateSlug(a.title) === newsDetails
-    );
-    if (matched) {
-      article = matched;
-      sourceLabel = '🟡 LOCAL STREAM';
-    }
-  }
+
 
   // Not Found layout
   if (!article) {
@@ -173,12 +164,7 @@ export default async function NewsDetailsPage(
   try {
     const { db, isUsingFallback } = await getDb();
     if (!isUsingFallback && db) {
-      // Lazy seed author data if collection is empty
-      const count = await db.collection('authors').countDocuments();
-      if (count === 0) {
-        const withNoId = INITIAL_AUTHORS.map(({ _id, ...rest }) => rest);
-        await db.collection('authors').insertMany(withNoId as any);
-      }
+
       
       const dbAuthor = await db.collection('authors').findOne({ name: article.author });
       if (dbAuthor) {
@@ -196,20 +182,15 @@ export default async function NewsDetailsPage(
     console.error('Failed to load author metadata from MongoDB:', err);
   }
 
-  // Fallback to local array
-  if (!authorData) {
-    const localAuthor = INITIAL_AUTHORS.find(a => a.name === article!.author);
-    if (localAuthor) {
-      authorData = localAuthor;
-    } else if (article.author) {
-      authorData = {
-        name: article.author,
-        designation: "কন্ট্রিবিউটর",
-        bio: `${article.author}  পোর্টালে নিয়মিত বস্তুনিষ্ঠ সংবাদ ও বিশ্লেষণ কলাম লেখেন।`,
-        avatarUrl: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
-        email: "manabadhikarkhabar11@gmail.com"
-      };
-    }
+  // Fallback generic author
+  if (!authorData && article.author) {
+    authorData = {
+      name: article.author,
+      designation: "কন্ট্রিবিউটর",
+      bio: `${article.author}  পোর্টালে নিয়মিত বস্তুনিষ্ঠ সংবাদ ও বিশ্লেষণ কলাম লেখেন।`,
+      avatarUrl: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
+      email: "manabadhikarkhabar11@gmail.com"
+    };
   }
 
   return <ArticleDetailClient article={article} sourceLabel={sourceLabel} authorData={authorData} />;

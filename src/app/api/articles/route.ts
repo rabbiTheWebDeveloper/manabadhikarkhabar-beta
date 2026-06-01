@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
 import { cookies } from 'next/headers';
+import { revalidatePath } from 'next/cache';
 import { verifyToken } from '@/lib/auth-store';
 import { scrapeLatestNews, lastScrapeStatus, scrapeManabadhikarNews, manabadhikarScrapeStatus } from '@/lib/scraper';
 import { getArticlesQuery, createArticleQuery } from '@/queries/article';
@@ -53,6 +54,8 @@ export async function POST(req: NextRequest) {
     }
 
     const result = await createArticleQuery(body);
+    revalidatePath('/');
+    revalidatePath('/archive');
     return NextResponse.json(result);
   } catch (error: any) {
     return NextResponse.json({ error: error.message || 'Fatal error creating article' }, { status: 500 });
